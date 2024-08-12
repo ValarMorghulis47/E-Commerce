@@ -17,13 +17,14 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const logoutHandler = () => {
+    setIsOpen(false);
     console.log("logout");
   };
 
   return (
     <nav className="header">
       <Link onClick={() => setIsOpen(false)} to={"/"}>
-        HOME
+        Home
       </Link>
       <Link onClick={() => setIsOpen(false)} to={"/search"}>
         <FaSearch />
