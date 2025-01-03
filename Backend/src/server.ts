@@ -1,15 +1,20 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 
 
+dotenv.config({ path: './.env' });
+
+connectDB();
 const app = express();
 
 app.use(express.json());
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // importing routes
 import userRoutes from './routes/user.routes.js';
+import { connectDB } from './utils/features.js';
 
 app.use('api/v1/user', userRoutes);
 
@@ -20,5 +25,5 @@ app.get('/', (req, res) => {
 
 app.use(errorMiddleware);
 app.listen(port, () => {
-  console.log('Server is running at http://localhost:3000');
+  console.log(`Server is running at ${port}` );
 });
