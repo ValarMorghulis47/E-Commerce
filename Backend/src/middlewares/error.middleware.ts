@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import ErrorHandler from "../utils/errorHandler.js";
-import { controllerType } from "../types/types.js";
+import { ControllerType } from "../types/types.js";
 
 
 export const errorMiddleware = (err: ErrorHandler, req: Request, res: Response, next: NextFunction) => {
@@ -13,7 +13,7 @@ export const errorMiddleware = (err: ErrorHandler, req: Request, res: Response, 
     });
 };
 
-export const TryCatch = (func: controllerType) => async (req: Request, res: Response, next: NextFunction) => {
+export const TryCatch = (func: ControllerType) => async (req: Request, res: Response, next: NextFunction) => {
     try {
         await func(req, res, next);
     } catch (error) {

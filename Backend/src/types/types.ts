@@ -7,11 +7,11 @@ export interface newUserRequest {
     photo: string;
     gender: string;
     _id: string;
-    dob: string;
+    dob: Date;
 };
 
-export type controllerType = (
+export type ControllerType = (
     req: Request,
     res: Response,
     next: NextFunction
-) => Promise<Response<any, Record<string, any>>>
+  ) => Promise<void | Response<any, Record<string, any>>>;
