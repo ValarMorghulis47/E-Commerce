@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import { errorMiddleware } from './middlewares/error.middleware.js';
+import { connectDB } from './utils/features.js';
 
 
 dotenv.config({ path: './.env' });
@@ -14,9 +15,11 @@ const port = process.env.PORT || 3000;
 
 // importing routes
 import userRoutes from './routes/user.routes.js';
-import { connectDB } from './utils/features.js';
+import productRoutes from './routes/product.routes.js';
+
 
 app.use('api/v1/user', userRoutes);
+app.use('api/v1/product', productRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World');
