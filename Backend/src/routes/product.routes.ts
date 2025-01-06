@@ -1,11 +1,13 @@
 import express from 'express';
 import { adminOnly } from '../middlewares/auth.middleware.js';
-import { deleteProduct, getAllProductsAdmin, getLatestProducts, getSingleProduct, newProduct, updateProduct } from '../controllers/product.controller.js';
+import { deleteProduct, getAllProductsAdmin, getLatestProducts, getSearchProducts, getSingleProduct, newProduct, updateProduct } from '../controllers/product.controller.js';
 import { multipleUpload } from '../middlewares/multer.middleware.js';
 
 const app = express.Router();
 
 app.post('/new', adminOnly, multipleUpload, newProduct);
+
+app.get('/search-products', getSearchProducts);
 
 app.get('/all', adminOnly, getAllProductsAdmin);
 

@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 
-
 export interface newUserRequest {
     name: string;
     email: string;
@@ -16,6 +15,25 @@ export interface newProductRequest {
     category: string;
     stock: number;
 };
+
+export type SearchProduct = {
+    search?: string;
+    category?: string;
+    price?: number;
+    sort?: string;
+    page?: number;
+}
+
+export type BaseQuerySearch = {
+    name?: {
+        $regex: string;
+        $options: string;
+    },
+    category?: string;
+    price?: {
+        $lte: number;
+    }
+}
 
 export type ControllerType = (
     req: Request,
