@@ -7,7 +7,7 @@ import { Product } from "../models/product.model.js";
 
 
 
-const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res: Response, next: NextFunction) => {
+const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res, next) => {
 
     const { name, price, category, stock } = req.body;
     if (!name || !price || !category || !stock) {
@@ -47,7 +47,7 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res:
 
 });
 
-const getAllProductsAdmin = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const getAllProductsAdmin = TryCatch(async (req, res, next) => {
 
     const products = await Product.find();
 
@@ -58,7 +58,7 @@ const getAllProductsAdmin = TryCatch(async (req: Request, res: Response, next: N
     });
 });
 
-const getSingleProduct = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const getSingleProduct = TryCatch(async (req, res, next) => {
 
     const { id } = req.params;
     const product = await Product.findById(id);
@@ -73,7 +73,7 @@ const getSingleProduct = TryCatch(async (req: Request, res: Response, next: Next
     });
 })
 
-const updateProduct = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const updateProduct = TryCatch(async (req, res, next) => {
 
     const { id } = req.params;
     const product = await Product.findById(id);
@@ -100,7 +100,7 @@ const updateProduct = TryCatch(async (req: Request, res: Response, next: NextFun
     });
 });
 
-const deleteProduct = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const deleteProduct = TryCatch(async (req, res, next) => {
 
     const { id } = req.params;
     const product = await Product.findById(id);
@@ -120,7 +120,7 @@ const deleteProduct = TryCatch(async (req: Request, res: Response, next: NextFun
 
 });
 
-const getLatestProducts = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const getLatestProducts = TryCatch(async (req, res, next) => {
 
     const Products = await Product.find().sort({ createdAt: -1 }).limit(5);
 
@@ -132,7 +132,7 @@ const getLatestProducts = TryCatch(async (req: Request, res: Response, next: Nex
 
 });
 
-const getCategories = TryCatch(async (req: Request, res: Response, next: NextFunction) => {
+const getCategories = TryCatch(async (req, res, next) => {
 
     const categories = await Product.distinct("category");
 
@@ -143,7 +143,7 @@ const getCategories = TryCatch(async (req: Request, res: Response, next: NextFun
     });
 });
 
-const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct>, res: Response, next: NextFunction) => {
+const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct>, res, next) => {
 
     const { search, category, price, sort } = req.query;
     const page = Number(req.query.page) || 1;

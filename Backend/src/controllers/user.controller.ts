@@ -5,7 +5,7 @@ import { User } from "../models/user.model.js";
 import ErrorHandler from "../utils/errorHandler.js";
 
 
-const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res: Response, next: NextFunction) => {
+const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res, next) => {
     const { name, email, photo, dob, _id, gender } = req.body;
 
     const user = await User.findById({ _id});
@@ -36,7 +36,7 @@ const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res: Respon
     });
 });
 
-const getAllUsers = TryCatch(async(req: Request, res: Response, next: NextFunction) => {
+const getAllUsers = TryCatch(async(req, res, next) => {
     const users = await User.find();
     if (!users) {
         return next(new ErrorHandler("No users found", 404));
@@ -49,7 +49,7 @@ const getAllUsers = TryCatch(async(req: Request, res: Response, next: NextFuncti
     });
 });
 
-const getSingleUser = TryCatch(async(req: Request, res: Response, next: NextFunction) => {
+const getSingleUser = TryCatch(async(req, res, next) => {
     const { id } = req.params;
 
     const user = await User.findById({id});
@@ -64,7 +64,7 @@ const getSingleUser = TryCatch(async(req: Request, res: Response, next: NextFunc
     });
 });
 
-const deleteUser = TryCatch(async(req: Request, res: Response, next: NextFunction) => {
+const deleteUser = TryCatch(async(req, res, next) => {
     const { id } = req.params;
 
     const user = await User.findById(id);
