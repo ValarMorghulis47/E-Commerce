@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const schema = new mongoose.Schema(
+const orderSchema = new mongoose.Schema(
     {
         shippingInfo: {
             address: {
@@ -80,4 +80,4 @@ const schema = new mongoose.Schema(
     }
 );
 
-export const Order = mongoose.model("Order", schema);
+export const Order = mongoose.model("Order", orderSchema);

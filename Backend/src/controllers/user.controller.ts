@@ -20,7 +20,7 @@ const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res, next) 
         return next(new ErrorHandler("Please fill all fields", 400));
     }
 
-    const Newuser = await User.create({
+    const newUser = await User.create({
         name,
         email,
         photo,
@@ -31,8 +31,8 @@ const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res, next) 
 
     return res.status(200).json({
         status: "success",
-        message: `Welcome ${Newuser.name}`,
-        data: Newuser
+        message: `Welcome ${newUser.name}`,
+        data: newUser
     });
 });
 

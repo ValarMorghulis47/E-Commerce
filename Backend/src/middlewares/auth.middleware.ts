@@ -16,7 +16,7 @@ export const adminOnly = TryCatch(async(req: Request, res: Response, next: NextF
     }
 
     if (user.role !== "admin") {
-        return next(new ErrorHandler("You are not authorized to perform this action", 401));
+        return next(new ErrorHandler("You are not authorized to perform this action", 403));
     }
 
     next();

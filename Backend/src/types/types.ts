@@ -34,6 +34,11 @@ export interface newOrderRequest {
     status: string;
 };
 
+export interface newCouponRequest {
+    code: string;
+    amount: number;
+};
+
 export type SearchProduct = {
     search?: string;
     category?: string;
