@@ -43,7 +43,7 @@ const arr: Array<DataType> = [
 
 const columns: Column<DataType>[] = [
   {
-    Header: "Avatar",
+    Header: "Name",
     accessor: "user",
   },
   {

@@ -16,10 +16,12 @@ const port = process.env.PORT || 3000;
 // importing routes
 import userRoutes from './routes/user.routes.js';
 import productRoutes from './routes/product.routes.js';
+import orderRoutes from './routes/order.routes.js';
 
 
 app.use('api/v1/user', userRoutes);
 app.use('api/v1/product', productRoutes);
+app.use('api/v1/order', orderRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World');

@@ -1,5 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 
+export type ControllerType = (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => Promise<void | Response<any, Record<string, any>>>;
+
 export interface newUserRequest {
     name: string;
     email: string;
@@ -16,13 +22,25 @@ export interface newProductRequest {
     stock: number;
 };
 
+export interface newOrderRequest {
+    orderItems: OrderItem[];
+    shippingInfo: ShippingInfo;
+    subtotal: number;
+    tax: number;
+    discount: number;
+    shippingCharges: number;
+    total: number;
+    user: string;
+    status: string;
+};
+
 export type SearchProduct = {
     search?: string;
     category?: string;
     price?: number;
     sort?: string;
     page?: number;
-}
+};
 
 export type BaseQuerySearch = {
     name?: {
@@ -33,10 +51,20 @@ export type BaseQuerySearch = {
     price?: {
         $lte: number;
     }
-}
+};
 
-export type ControllerType = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => Promise<void | Response<any, Record<string, any>>>;
+export type ShippingInfo = {
+    address: string;
+    city: string;
+    pinCode: number;
+    country: string;
+    state: string;
+};
+
+export type OrderItem = {
+    name: string;
+    photo: string;
+    price: number;
+    quantity: number;
+    productId: string;
+};

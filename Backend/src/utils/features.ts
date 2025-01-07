@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
+import { OrderItem } from "../types/types.js";
+import { Product } from "../models/product.model.js";
 
 export const connectDB = async () => {
     try {
@@ -64,4 +66,20 @@ export const DeleteFilesCloudinary = async (public_ids: string[]) => {
     } catch (err) {
         throw new Error("Error deleting files from cloudinary", err as Error);
     }
+};
+
+export const reduceStock = async (orderItems: OrderItem[]) => {
+    orderItems.map(async (item) => {
+        const product = await Product.findById(item.productId);
+        if (!product) throw new Error("Product not found");
+        product.stock -= item.quantity;
+        await product.save();
+    });
+    // for (let i = 0; i < orderItems.length; i++) {
+    //     const order = orderItems[i];
+    //     const product = await Product.findById(order.productId);
+    //     if (!product) throw new Error("Product not found");
+    //     product.stock -= order.quantity;
+    //     await product.save();
+    // }
 };
