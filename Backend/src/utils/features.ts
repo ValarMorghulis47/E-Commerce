@@ -83,3 +83,32 @@ export const reduceStock = async (orderItems: OrderItem[]) => {
     //     await product.save();
     // }
 };
+
+export const calculatePercentage = (thisMonth: number, lastMonth: number) => {
+    if (lastMonth === 0) return thisMonth * 100;
+    const percent = (thisMonth / lastMonth) * 100;
+    return Number(percent.toFixed(0));
+};
+
+export const getInventoryData = async (productCategories: string[], productsCount: number) => {
+    const individualProductCountPromise = productCategories.map((category) => {
+        return Product.countDocuments({ category });
+    });
+
+    const individualProductCount = await Promise.all(individualProductCountPromise);
+
+    const inventoryData = productCategories.map((category, index) => ({
+        [category]: Math.round((individualProductCount[index] / productsCount) * 100),
+    }));
+    return inventoryData;
+    // OR If the above is too complex, you can use the below code
+    // const inventoryData: Record<string, number>[] = [];
+
+    // productCategories.forEach((category, i) => {
+    //     inventoryData.push({
+    //         [category]: Math.round((individualProductCount[i] / productsCount) * 100),
+    //     });
+    // });
+
+    // return inventoryData;
+};
