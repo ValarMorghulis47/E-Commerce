@@ -2,7 +2,7 @@ import { TryCatch } from "../middlewares/error.middleware.js";
 import { Order } from "../models/order.model.js";
 import { Product } from "../models/product.model.js";
 import { User } from "../models/user.model.js";
-import { calculatePercentage, getInventoryData } from "../utils/features.js";
+import { calculatePercentage, getCharData, getInventoryData } from "../utils/features.js";
 
 
 const getDashboardStats = TryCatch(async (_, res, __) => {
@@ -117,7 +117,7 @@ const getDashboardStats = TryCatch(async (_, res, __) => {
         const differenceFromCurrentMonth = (today.getMonth() - orderCreationDate.getMonth() + 12) % 12; // this will give me the difference between the current month and the month of the order creation
         if (differenceFromCurrentMonth < 6) { // if the order is within the last 6 months
             // using 5 here because the array index starts from 0
-            thatMonthNumberOfOrders[5 - differenceFromCurrentMonth] += 1; 
+            thatMonthNumberOfOrders[5 - differenceFromCurrentMonth] += 1;
             thatMonthRevenue[5 - differenceFromCurrentMonth] += order.total;
         }
     });
@@ -131,7 +131,7 @@ const getDashboardStats = TryCatch(async (_, res, __) => {
 
     let userRatio = {
         male: userMaleCount,
-        female: allUsersCount - userMaleCount 
+        female: allUsersCount - userMaleCount
     }
 
     const recentOrders = last4Orders.map(order => {
@@ -160,7 +160,140 @@ const getDashboardStats = TryCatch(async (_, res, __) => {
     });
 });
 
+const getBarChartData = TryCatch(async (_, res, __) => {
+
+    let barCharts = {};
+
+    const today = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const tweleveMonthsAgo = new Date();
+    tweleveMonthsAgo.setMonth(tweleveMonthsAgo.getMonth() - 12);
+
+    const sixMonthsAgoUserPromise = User.find({
+        createdAt: {
+            $gte: sixMonthsAgo,
+            $lte: today
+        }
+    }).select('createdAt');
+
+    const sixMonthsAgoProductPromise = Product.find({
+        createdAt: {
+            $gte: sixMonthsAgo,
+            $lte: today
+        }
+    }).select('createdAt');
+
+    const tweleveMonthsAgoOrdersPromise = Order.find({
+        createdAt: {
+            $gte: tweleveMonthsAgo,
+            $lte: today
+        }
+    }).select('createdAt');
+
+    const [sixMonthsAgoUsers, sixMonthsAgoProducts, tweleveMonthsAgoOrders] = await Promise.all([
+        sixMonthsAgoUserPromise,
+        sixMonthsAgoProductPromise,
+        tweleveMonthsAgoOrdersPromise
+    ]);
+
+    const userChartData = getCharData({ length: 6, docArray: sixMonthsAgoUsers, today });
+    const productChartData = getCharData({ length: 6, docArray: sixMonthsAgoProducts, today });
+    const ordersChartData = getCharData({ length: 12, docArray: tweleveMonthsAgoOrders, today });
+
+    barCharts = {
+        userChartData,
+        productChartData,
+        ordersChartData
+    };
+
+    return res.status(200).json({
+        success: true,
+        message: "Bar charts data fetched successfully",
+        barCharts
+    });
+});
+
+const getPieChartData = TryCatch(async (_, res, __) => {
+
+    let pieCharts = {};
+
+    const processingOrdersPromise = Order.countDocuments({ status: "processing" });
+    const shippedOrdersPromise = Order.countDocuments({ status: "shipped" });
+    const deliveredOrdersPromise = Order.countDocuments({ status: "delivered" });
+
+    const allOrdersPromise = Order.find().select(["total", "discount", "tax", "shippingCharges", "subtotal"]);
+
+    const [processingOrders, shippedOrders, deliveredOrders, allProductsCount, productCategories, inStockProducts, allOrders, allUsers] = await Promise.all([
+        processingOrdersPromise,
+        shippedOrdersPromise,
+        deliveredOrdersPromise,
+        Product.countDocuments(),
+        Product.distinct("category"),
+        Product.countDocuments({ stock: { $gt: 0 } }),
+        allOrdersPromise,
+        User.find().select(['dob', 'role']),
+    ]);
+
+    const orderStatusData = {
+        processing: processingOrders,
+        shipped: shippedOrders,
+        delivered: deliveredOrders
+    }
+
+    const inventoryData = await getInventoryData(productCategories, allProductsCount);
+
+    const stockRatio = {
+        inStock: inStockProducts,
+        outOfStock: allProductsCount - inStockProducts
+    }
+
+    const totalRevenue = allOrders.reduce((total, singleOrder) => total + (singleOrder.total || 0), 0);
+    const totalDiscount = allOrders.reduce((total, singleOrder) => total + (singleOrder.discount || 0), 0);
+    const burnt = allOrders.reduce((total, singleOrder) => total + (singleOrder.tax || 0), 0);
+    const productionCost = allOrders.reduce((total, singleOrder) => total + (singleOrder.shippingCharges || 0), 0);
+    const marketingCost = Math.round((totalRevenue * 30) / 100);
+    const netMargin = totalRevenue - totalDiscount - burnt - productionCost - marketingCost;
+
+    const revenueDistribution = {
+        netMargin,
+        marketingCost,
+        totalDiscount,
+        burnt,
+        productionCost
+    }
+
+    const userAgeRatio = {
+        teenage: allUsers.filter(user => user.age < 17).length,
+        adult: allUsers.filter(user => user.age >= 17 && user.age < 40).length,
+        old: allUsers.filter(user => user.age >= 40).length
+    }
+
+    const userRoleRatio = {
+        admin: allUsers.filter(user => user.role === "admin").length,
+        user: allUsers.filter(user => user.role === "user").length
+    }
+
+    pieCharts = {
+        orderStatusData,
+        inventoryData,
+        stockRatio,
+        revenueDistribution,
+        userAgeRatio,
+        userRoleRatio
+    };
+
+    return res.status(200).json({
+        success: true,
+        message: "Pie charts data fetched successfully",
+        pieCharts
+    });
+});
+
 
 export {
-    getDashboardStats
+    getDashboardStats,
+    getBarChartData,
+    getPieChartData,
 }

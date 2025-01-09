@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Document } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 import { OrderItem } from "../types/types.js";
@@ -15,10 +15,11 @@ export const connectDB = async () => {
         console.log(`Database Connection Error: ${(error as Error).message}`);
         process.exit(1);
     }
-}
+};
 
-const getBase64 = (file: Express.Multer.File) =>
-    `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+const getBase64 = (file: Express.Multer.File) => {
+    return `data:${file.mimetype};base64,${file.buffer.toString("base64")}`;
+}
 
 export const UploadFilesCloudinary = async (files: Express.Multer.File[], folderName: string) => {
     const uploadPromises = files.map((file) => {
@@ -111,4 +112,35 @@ export const getInventoryData = async (productCategories: string[], productsCoun
     // });
 
     // return inventoryData;
+};
+
+export const getCharData = ({length, docArray, today, property}: FuncProps) => {
+    const data: number[] = new Array(length).fill(0);
+
+    docArray.forEach(singleDoc => {
+        const creationDate = singleDoc.createdAt;
+        const differenceFromCurrentMonth = (today.getMonth() - creationDate.getMonth() + 12) % 12; // this will give me the difference between the current month and the month of the order creation. +12 is to avoid negative values and %12 is to get the remainder(Just to nullify the effect of +12)
+        if (differenceFromCurrentMonth < length) { 
+            if (property) {
+                data[length - differenceFromCurrentMonth] += singleDoc[property]!;
+            } else {
+                data[length - differenceFromCurrentMonth] += 1;
+            }
+        };
+    });
+
+    return data;
+};
+
+interface DocArray extends Document {
+    createdAt: Date;
+    total?: number;
+    discount?: number;
+};
+
+type FuncProps = {
+    length: number;
+    docArray: DocArray[];
+    today: Date;
+    property?: "total" | "discount";
 };
