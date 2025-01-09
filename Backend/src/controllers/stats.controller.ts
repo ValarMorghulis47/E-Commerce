@@ -160,7 +160,7 @@ const getDashboardStats = TryCatch(async (_, res, __) => {
     });
 });
 
-const getBarChartData = TryCatch(async (_, res, __) => {
+const getBarChartsData = TryCatch(async (_, res, __) => {
 
     let barCharts = {};
 
@@ -215,7 +215,7 @@ const getBarChartData = TryCatch(async (_, res, __) => {
     });
 });
 
-const getPieChartData = TryCatch(async (_, res, __) => {
+const getPieChartsData = TryCatch(async (_, res, __) => {
 
     let pieCharts = {};
 
@@ -291,9 +291,51 @@ const getPieChartData = TryCatch(async (_, res, __) => {
     });
 });
 
+const getLineChartsData = TryCatch(async (_, res, __) => {
+
+    let lineCharts = {};
+
+    const today = new Date();
+    const tweleveMonthsAgo = new Date();
+    tweleveMonthsAgo.setMonth(tweleveMonthsAgo.getMonth() - 12);
+
+   const baseQuery = {
+    createdAt: {
+        $gte: tweleveMonthsAgo,
+        $lte: today
+    }
+   }
+
+    const [user, products, orders] = await Promise.all([
+        User.find(baseQuery).select('createdAt'),
+        Product.find(baseQuery).select('createdAt'),
+        Order.find(baseQuery).select('createdAt total discount')
+        
+    ]);
+
+    const usersChartData = getCharData({ length: 12, docArray: user, today });
+    const productsChartData = getCharData({ length: 12, docArray: products, today });
+    const revenueData = getCharData({ length: 12, docArray: orders, today, property: "total" });
+    const discountData = getCharData({ length: 12, docArray: orders, today, property: "discount" });
+
+    lineCharts = {
+        usersChartData,
+        productsChartData,
+        revenueData,
+        discountData
+    };
+
+    return res.status(200).json({
+        success: true,
+        message: "Line charts data fetched successfully",
+        lineCharts
+    });
+});
+
 
 export {
     getDashboardStats,
-    getBarChartData,
-    getPieChartData,
+    getBarChartsData,
+    getPieChartsData,
+    getLineChartsData
 }
