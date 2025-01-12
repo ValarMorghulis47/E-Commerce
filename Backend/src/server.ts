@@ -1,5 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import cors from 'cors';
+import { v2 as cloudinary } from 'cloudinary';
 import { errorMiddleware } from './middlewares/error.middleware.js';
 import { connectDB } from './utils/features.js';
 
@@ -7,8 +9,21 @@ import { connectDB } from './utils/features.js';
 dotenv.config({ path: './.env' });
 
 connectDB();
+
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
 const app = express();
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE']
+}));
 app.use(express.json());
 
 const port = process.env.PORT || 3000;
@@ -20,11 +35,11 @@ import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import statsRoutes from './routes/stats.routes.js';
 
-app.use('api/v1/user', userRoutes);
-app.use('api/v1/product', productRoutes);
-app.use('api/v1/order', orderRoutes);
-app.use('api/v1/payment', paymentRoutes);
-app.use('api/v1/stats', statsRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/product', productRoutes);
+app.use('/api/v1/order', orderRoutes);
+app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/stats', statsRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World');

@@ -11,12 +11,13 @@ const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res, next) 
     const user = await User.findById({ _id});
     if (user) {
         return res.status(200).json({
-            status: true,
+            success: true,
             message: `Welcome back ${user.name}`,
+            user
         })
     }
 
-    if (!name || !email || !photo || !dob !|| _id !|| gender){
+    if (!name || !email || !photo || !dob || !_id || !gender){
         return next(new ErrorHandler("Please fill all fields", 400));
     }
 
@@ -30,9 +31,9 @@ const newUser = TryCatch(async(req: Request<{}, {}, newUserRequest>, res, next) 
     });
 
     return res.status(200).json({
-        status: "success",
+        success: true,
         message: `Welcome ${newUser.name}`,
-        data: newUser
+        user
     });
 });
 
@@ -43,24 +44,24 @@ const getAllUsers = TryCatch(async(req, res, next) => {
     }
 
     return res.status(200).json({
-        status: "success",
+        success: true,
         message: "All users fetched Successfully",
-        data: users
+        users
     });
 });
 
 const getSingleUser = TryCatch(async(req, res, next) => {
     const { id } = req.params;
 
-    const user = await User.findById({id});
+    const user = await User.findById(id);
     if (!user) {
         return next(new ErrorHandler("User not found", 404));
     }
 
     return res.status(200).json({
-        status: "success",
+        success: true,
         message: "User fetched Successfully",
-        data: user
+        user
     });
 });
 
@@ -75,7 +76,7 @@ const deleteUser = TryCatch(async(req, res, next) => {
     await user.deleteOne();
 
     return res.status(200).json({
-        status: "success",
+        success: true,
         message: "User deleted Successfully",
     });
 });

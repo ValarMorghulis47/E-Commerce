@@ -1,7 +1,14 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/header";
 import Loader from "./components/admin/Loader";
+import { Toaster } from "react-hot-toast";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "./redux/store";
+import { userExist, userNotExist } from "./redux/reducers/userReducer";
+import { getSingleUser } from "./redux/api/userAPI";
 
 const Home = lazy(() => import("./pages/home"));
 const Login = lazy(() => import("./pages/login"));
@@ -25,15 +32,35 @@ const NewProduct = lazy(() => import("./pages/admin/management/newproduct"));
 const ProductManagement = lazy(
   () => import("./pages/admin/management/productmanagement")
 );
-const TransactionManagement = lazy(
-  () => import("./pages/admin/management/transactionmanagement")
-);
+// const TransactionManagement = lazy(
+//   () => import("./pages/admin/management/transactionmanagement")
+// );
 
 const App = () => {
-  return (
+
+  const { user, loading } = useSelector((state: RootState) => state.userReducer);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+
+    onAuthStateChanged(auth, async(user) => {
+      if (user) {
+        const data = await getSingleUser(user.uid);
+        dispatch(userExist(data.user));
+      }
+      else {
+        console.log("User not found");
+        
+        dispatch(userNotExist());
+      }
+    })
+  
+  }, []);
+
+  return loading ? <Loader /> : (
     <Router>
-      <Header />
-      <Suspense fallback={<Loader />}>
+    <Header user={user} />
+    <Suspense fallback={<Loader />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
@@ -47,7 +74,7 @@ const App = () => {
           <Route path="/shipping" element={<Shipping />} />
           <Route path="/orders" element={<Orders />} />
         </Route>
-        
+
         {/* Admin Routes */}
         <Route
         // element={
@@ -72,15 +99,16 @@ const App = () => {
 
           <Route path="/admin/product/:id" element={<ProductManagement />} />
 
-          <Route
+          {/* <Route
             path="/admin/transaction/:id"
             element={<TransactionManagement />}
-          />
+          /> */}
         </Route>
       </Routes>
 
-      </Suspense>
-    </Router>
+    </Suspense>
+    <Toaster position="bottom-center" />
+  </Router>
   );
 };
 

@@ -4,7 +4,6 @@ import { adminOnly } from '../middlewares/auth.middleware.js';
 
 const app = express.Router();
 
-
 app.post('/new', newUser);
 
 app.get('/all', adminOnly, getAllUsers);

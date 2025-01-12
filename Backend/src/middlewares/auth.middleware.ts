@@ -10,7 +10,7 @@ export const adminOnly = TryCatch(async(req: Request, res: Response, next: NextF
         return next(new ErrorHandler("Please provide an id", 400));
     }
 
-    const user = await User.findById({id});
+    const user = await User.findById(id);
     if (!user) {
         return next(new ErrorHandler("User not found", 404));
     }

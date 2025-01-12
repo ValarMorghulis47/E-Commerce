@@ -8,7 +8,6 @@ export const errorMiddleware = (err: ErrorHandler, req: Request, res: Response, 
     const statusCode = err.statusCode || 500;
     res.status(statusCode).json({
         status: "error",
-        statusCode,
         message: message,
     });
 };
