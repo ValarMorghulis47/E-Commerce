@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/header";
-import Loader from "./components/admin/Loader";
+import Loader, { LoaderLayout } from "./components/admin/Loader";
 import { Toaster } from "react-hot-toast";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "./redux/store";
 import { userExist, userNotExist } from "./redux/reducers/userReducer";
 import { getSingleUser } from "./redux/api/userAPI";
+import ProtectedRoute from "./components/protected-route";
 
 const Home = lazy(() => import("./pages/home"));
 const Login = lazy(() => import("./pages/login"));
@@ -60,26 +61,32 @@ const App = () => {
   return loading ? <Loader /> : (
     <Router>
     <Header user={user} />
-    <Suspense fallback={<Loader />}>
+    <Suspense fallback={<LoaderLayout />}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/cart" element={<Cart />} />
 
         {/* Logged Out User Routes */}
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={
+          <ProtectedRoute isAuthenticated={user ? false: true} >
+            <Login />
+          </ProtectedRoute>
+        } />
 
         {/* Logged In User Routes */}
-        <Route>
+        <Route element={
+          <ProtectedRoute isAuthenticated={user ? true: false} />
+        }>
           <Route path="/shipping" element={<Shipping />} />
           <Route path="/orders" element={<Orders />} />
         </Route>
 
         {/* Admin Routes */}
         <Route
-        // element={
-        //   <ProtectedRoute isAuthenticated={true} adminRoute={true} isAdmin={true} />
-        // }
+        element={
+          <ProtectedRoute isAuthenticated={user ? true: false} admin={user?.role==="admin"? true:false} adminOnly={true} />
+        }
         >
           <Route path="/admin/dashboard" element={<Dashboard />} />
           <Route path="/admin/product" element={<Products />} />

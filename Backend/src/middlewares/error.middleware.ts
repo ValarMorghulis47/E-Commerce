@@ -7,7 +7,7 @@ export const errorMiddleware = (err: ErrorHandler, req: Request, res: Response, 
     const message = err.message || "Something went wrong";
     const statusCode = err.statusCode || 500;
     res.status(statusCode).json({
-        status: "error",
+        success: false,
         message: message,
     });
 };

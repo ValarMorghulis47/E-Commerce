@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 type ProductsProps = {
   productId: string;
-  photo: string;
+  photo: { url: string; public_id: string; _id: string };
   name: string;
   price: number;
   stock: number;
@@ -18,9 +18,11 @@ const ProductCard = ({
   stock,
   handler,
 }: ProductsProps) => {
+  console.log(photo);
+  
   return (
     <div className="product-card">
-      <img src={photo} alt={name} />
+      <img src={photo.url} alt={name} />
       <p>{name}</p>
       <span>${price}</span>
 

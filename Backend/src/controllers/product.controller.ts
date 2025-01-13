@@ -54,7 +54,7 @@ const getAllProductsAdmin = TryCatch(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Products fetched Successfully",
-        data: products
+        products
     });
 });
 
@@ -69,7 +69,7 @@ const getSingleProduct = TryCatch(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Product fetched Successfully",
-        data: product
+        product
     });
 })
 
@@ -80,7 +80,7 @@ const updateProduct = TryCatch(async (req, res, next) => {
     if (!product) {
         return next(new ErrorHandler("Product not found", 404));
     }
-
+    // TODO: Only Update The Specific Photos
     const photos = req.files as Express.Multer.File[] | undefined;
     if (photos && photos.length > 0) {
         const photoUrls = await UploadFilesCloudinary(photos, "products");
@@ -96,7 +96,7 @@ const updateProduct = TryCatch(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Product updated Successfully",
-        data: product
+        product
     });
 });
 
@@ -122,12 +122,12 @@ const deleteProduct = TryCatch(async (req, res, next) => {
 
 const getLatestProducts = TryCatch(async (req, res, next) => {
 
-    const Products = await Product.find().sort({ createdAt: -1 }).limit(5);
+    const products = await Product.find().sort({ createdAt: -1 }).limit(5);
 
     return res.status(200).json({
         success: true,
         message: "Latest Products fetched Successfully",
-        data: Products
+        products
     });
 
 });
@@ -139,7 +139,7 @@ const getCategories = TryCatch(async (req, res, next) => {
     return res.status(200).json({
         success: true,
         message: "Categories fetched Successfully",
-        data: categories
+        categories
     });
 });
 
@@ -166,21 +166,18 @@ const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct
         }
     }
     // This line of code will give me the limit of products to be fetched
-    const products = Product.find(searchObj).limit(limit).skip(skipProducts).sort({ price: sort?.toString() === "asc" ? 1 : -1 });
+    const productsPromise = Product.find(searchObj).limit(limit).skip(skipProducts).sort({ price: sort?.toString() === "asc" ? 1 : -1 });
     // This line of code will give me the total number of products that match the search criteria
     const [filteredProducts, totalPages] = await Promise.all([
-        products,
+        productsPromise,
         Product.countDocuments(searchObj)
     ]);
 
     return res.status(200).json({
         success: true,
         message: "Products fetched Successfully",
-        data: {
-            products: filteredProducts,
-            totalPages,
-            currentPage: page
-        }
+        filteredProducts,
+        totalPages
     });
 });
 

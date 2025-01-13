@@ -4,7 +4,7 @@ import { useLoginUserMutation } from "../redux/api/userAPI";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
 import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-import { UserResponse } from "../types/userAPI-types";
+import { UserResponse } from "../types/api-types";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
 import { userExist, userNotExist } from "../redux/reducers/userReducer";

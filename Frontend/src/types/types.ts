@@ -1,4 +1,4 @@
-export interface User {
+export type User = {
     _id: string;
     name: string;
     email: string;
@@ -8,6 +8,17 @@ export interface User {
     role: string;
 };
 
-export type SingleUser = {
-    id: string;
-};
+export type Product = {
+    _id: string;
+    name: string;
+    price: number;
+    stock: number;
+    category: string;
+    photos: Photos[];
+}
+
+type Photos = {
+    url: string;
+    public_id: string;
+    _id: string;
+}

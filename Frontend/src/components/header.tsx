@@ -8,6 +8,9 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { User } from "../types/types";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase";
+import toast from "react-hot-toast";
 
 type HeaderProps = {
   user: User | null;
@@ -16,9 +19,14 @@ type HeaderProps = {
 const Header = ({user}: HeaderProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const logoutHandler = () => {
-    setIsOpen(false);
-    console.log("logout");
+  const logoutHandler = async() => {
+   try {
+     await signOut(auth);
+     toast.success("Logged out successfully");
+     setIsOpen(false);
+   } catch (error) {
+     toast.error("Failed to logout");
+   }
   };
 
   return (
