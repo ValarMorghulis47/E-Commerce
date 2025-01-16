@@ -26,14 +26,14 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res,
     }
     const photoUrls = await UploadFilesCloudinary(photos, "products");
 
-    const newProduct = await Product.create({
+    const product = await Product.create({
         name,
         price,
         category: category.toLowerCase(),
         stock,
         photos: photoUrls,
     })
-    if (!newProduct) {
+    if (!product) {
         const public_ids = photoUrls.map((photo) => photo.public_id);
         await DeleteFilesCloudinary(public_ids);
         return next(new ErrorHandler("Failed to create product", 500));
@@ -42,7 +42,7 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res,
     return res.status(201).json({
         success: true,
         message: "Product created successfully",
-        data: newProduct
+        product
     });
 
 });

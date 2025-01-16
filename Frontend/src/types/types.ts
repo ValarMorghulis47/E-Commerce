@@ -22,3 +22,17 @@ type Photos = {
     public_id: string;
     _id: string;
 }
+
+export type newProductBodyType = {
+    id: string;
+    formData: FormData;
+};
+
+export type updateProductBodyType = newProductBodyType & {
+    productId: string;
+};
+
+export type deleteProductParamsType = {
+    id: string;
+    productId: string;
+};

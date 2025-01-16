@@ -1,13 +1,26 @@
 import { ChangeEvent, useState } from "react";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
+import toast from "react-hot-toast";
+import { RootState } from "../../../redux/store";
+import { useSelector } from "react-redux";
+import { useNewProductMutation } from "../../../redux/api/productAPI";
+import { responseToast } from "../../../utils/features";
+import { useNavigate } from "react-router-dom";
 
 const NewProduct = () => {
   const [name, setName] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [price, setPrice] = useState<number>(1000);
-  const [stock, setStock] = useState<number>(1);
+  const [price, setPrice] = useState<number>();
+  const [stock, setStock] = useState<number>();
   const [photoPrev, setPhotoPrev] = useState<string>("");
   const [photo, setPhoto] = useState<File>();
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const navigate = useNavigate();
+  const [newProduct] = useNewProductMutation();
+
+  const { user } = useSelector((state: RootState) => state.userReducer);
 
   const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const file: File | undefined = e.target.files?.[0];
@@ -25,12 +38,32 @@ const NewProduct = () => {
     }
   };
 
+  const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("price", String(price));
+      formData.append("stock", String(stock));
+      formData.append("category", category);
+      formData.append("photos", photo!);
+
+      const res = await newProduct({ formData, id: user?._id! });
+      responseToast(res, navigate, "/admin/product");
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="admin-container">
       <AdminSidebar />
       <main className="product-management">
         <article>
-          <form>
+          <form onSubmit={submitHandler}>
             <h2>New Product</h2>
             <div>
               <label>Name</label>
@@ -76,7 +109,7 @@ const NewProduct = () => {
             </div>
 
             {photoPrev && <img src={photoPrev} alt="New Image" />}
-            <button type="submit">Create</button>
+            <button type="submit" disabled={loading}>Create</button>
           </form>
         </article>
       </main>

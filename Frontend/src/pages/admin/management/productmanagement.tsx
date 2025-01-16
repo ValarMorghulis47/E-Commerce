@@ -1,23 +1,40 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
-
-const img =
-  "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8&w=1000&q=804";
+import { useDeleteProductMutation, useSingleProductQuery, useUpdateProductMutation } from "../../../redux/api/productAPI";
+import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../redux/store";
+import { responseToast } from "../../../utils/features";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import { DeleteResponse } from "../../../types/api-types";
 
 const Productmanagement = () => {
-  const [price, setPrice] = useState<number>(2000);
-  const [stock, setStock] = useState<number>(10);
-  const [name, setName] = useState<string>("Puma Shoes");
-  const [photo, setPhoto] = useState<string>(img);
-  const [category, setCategory] = useState<string>("footwear");
+
+  const params = useParams();
+  const navigate = useNavigate();
+  const { data, isLoading, isError } = useSingleProductQuery(params.id!);
+
+  const { name, price, stock, category, photos, _id } = data?.product || {
+    name: "Product Name",
+    price: 0,
+    stock: 0,
+    category: "Category",
+    photos: [{ url: "img", public_id: "public_id", _id: "id" }],
+  };
 
   const [priceUpdate, setPriceUpdate] = useState<number>(price);
   const [stockUpdate, setStockUpdate] = useState<number>(stock);
   const [nameUpdate, setNameUpdate] = useState<string>(name);
   const [categoryUpdate, setCategoryUpdate] = useState<string>(category);
-  const [photoUpdate, setPhotoUpdate] = useState<string>(photo);
+  const [photo, setPhoto] = useState<string>(photos[0].url);
+  const [photoUpdate, setPhotoUpdate] = useState<string>("");
   const [photoFile, setPhotoFile] = useState<File>();
+
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const { user } = useSelector((state: RootState) => state.userReducer);
 
   const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
     const file: File | undefined = e.target.files?.[0];
@@ -35,20 +52,65 @@ const Productmanagement = () => {
     }
   };
 
-  const submitHandler = (e: FormEvent<HTMLFormElement>): void => {
+  const [updateProduct] = useUpdateProductMutation();
+  const [deleteProduct] = useDeleteProductMutation();
+
+  const submitHandler = async(e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setName(nameUpdate);
-    setPrice(priceUpdate);
-    setStock(stockUpdate);
-    setPhoto(photoUpdate);
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      if (photoFile) formData.append("photos", photoFile);
+
+      if (nameUpdate) formData.append("name", nameUpdate);
+
+      if (priceUpdate) formData.append("price", String(priceUpdate));
+
+      if (stockUpdate !== undefined) formData.append("stock", String(stockUpdate));
+
+      if (categoryUpdate) formData.append("category", categoryUpdate);
+
+      const res = await updateProduct({formData, id: user?._id!, productId: _id!});
+      responseToast(res, navigate, "/admin/product");
+    } catch (error) {
+      toast.error("Failed to update product");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleDelete = async() => {
+    const res = await deleteProduct({id: user?._id!, productId: _id!});
+    if ("data" in res && res.data?.success) { 
+      toast.success(res.data.message);
+      navigate("/admin/product");
+    }
+    else {
+      const error = res.error as FetchBaseQueryError;
+      const errorMessage = (error.data as DeleteResponse).message;
+      toast.error(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    if (data) {
+      setNameUpdate(data.product.name);
+      setPriceUpdate(data.product.price);
+      setStockUpdate(data.product.stock);
+      setCategoryUpdate(data.product.category);
+      setPhoto(data.product.photos[0].url);
+    }
+  }, [data]);
+
+  if (isError) return navigate("/admin/product");
+
 
   return (
     <div className="admin-container">
       <AdminSidebar />
       <main className="product-management">
         <section>
-          <strong>ID - fsdfsfsggfgdf</strong>
+          <strong>ID - ${_id}</strong>
           <img src={photo} alt="Product" />
           <p>{name}</p>
           {stock > 0 ? (
@@ -56,10 +118,10 @@ const Productmanagement = () => {
           ) : (
             <span className="red"> Not Available</span>
           )}
-          <h3>₹{price}</h3>
+          <h3>${price}</h3>
         </section>
         <article>
-          <button className="product-delete-btn">
+          <button className="product-delete-btn" onClick={handleDelete}>
             <FaTrash />
           </button>
           <form onSubmit={submitHandler}>
@@ -108,7 +170,7 @@ const Productmanagement = () => {
             </div>
 
             {photoUpdate && <img src={photoUpdate} alt="New Image" />}
-            <button type="submit">Update</button>
+            <button type="submit" disabled={loading}>Update</button>
           </form>
         </article>
       </main>
