@@ -30,3 +30,13 @@ export interface DeleteResponse {
     success: boolean;
     message: string;
 };
+
+export interface cateogoriesResponse {
+    success: boolean;
+    message: string;
+    categories: string[];
+};
+
+export interface SearchProductResponse extends ProductResponse {
+    totalPages: number;
+};

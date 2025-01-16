@@ -36,3 +36,11 @@ export type deleteProductParamsType = {
     id: string;
     productId: string;
 };
+
+export type SearchProductType = {
+    search: string;
+    price: number;
+    category: string;
+    sort: string;
+    page: number;
+};

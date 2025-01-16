@@ -18,7 +18,6 @@ const ProductCard = ({
   stock,
   handler,
 }: ProductsProps) => {
-  console.log(photo);
   
   return (
     <div className="product-card">

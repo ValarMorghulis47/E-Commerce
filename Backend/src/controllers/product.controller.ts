@@ -149,7 +149,7 @@ const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct
     const page = Number(req.query.page) || 1;
     const limit = Number(process.env.SEARCH_PRODUCT_LIMIT) || 10;
     const skipProducts = (page - 1) * limit;
-
+    
     const searchObj: BaseQuerySearch = {};
     if (search) {
         searchObj.name = {
@@ -173,10 +173,12 @@ const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct
         Product.countDocuments(searchObj)
     ]);
 
+    const products = filteredProducts;
+    
     return res.status(200).json({
         success: true,
         message: "Products fetched Successfully",
-        filteredProducts,
+        products,
         totalPages
     });
 });

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { DeleteResponse, newProductResponse, ProductResponse } from "../../types/api-types";
-import { deleteProductParamsType, newProductBodyType, updateProductBodyType } from "../../types/types";
+import { cateogoriesResponse, DeleteResponse, newProductResponse, ProductResponse, SearchProductResponse } from "../../types/api-types";
+import { deleteProductParamsType, newProductBodyType, SearchProductType, updateProductBodyType } from "../../types/types";
 
 export const productApi = createApi({
     reducerPath: "productApi",
@@ -19,6 +19,23 @@ export const productApi = createApi({
                 url: `all?id=${id}`,
                 method: "GET",
             }),
+            providesTags: ["Product"],
+        }),
+        getCategories: builder.query<cateogoriesResponse, string>({
+            query: () => ({
+                url: 'category',
+                method: "GET",
+            }),
+            providesTags: ["Product"],
+        }),
+        getSearchProducts: builder.query<SearchProductResponse, SearchProductType>({
+            query: ({search, price, category, sort, page}) => {
+                let baseQuery = `search-products?search=${search}&page=${page}`;
+                if (price) baseQuery += `&price=${price}`;
+                if (category) baseQuery += `&category=${category}`;
+                if (sort) baseQuery += `&sort=${sort}`;
+                return baseQuery;
+            },
             providesTags: ["Product"],
         }),
         newProduct: builder.mutation<newProductResponse, newProductBodyType>({
@@ -54,4 +71,4 @@ export const productApi = createApi({
     }),
 });
 
-export const { useLatestProductsQuery, useAllProductsQuery, useNewProductMutation, useSingleProductQuery, useUpdateProductMutation, useDeleteProductMutation } = productApi;
+export const { useLatestProductsQuery, useAllProductsQuery, useNewProductMutation, useSingleProductQuery, useUpdateProductMutation, useDeleteProductMutation, useGetCategoriesQuery, useGetSearchProductsQuery } = productApi;
