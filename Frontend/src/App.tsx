@@ -50,8 +50,6 @@ const App = () => {
         dispatch(userExist(data.user));
       }
       else {
-        console.log("User not found");
-        
         dispatch(userNotExist());
       }
     })

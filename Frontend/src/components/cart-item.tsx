@@ -1,12 +1,19 @@
 import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { CartItemType } from "../types/types";
 
 type CartItemProps = {
-  cartItem: any;
+  cartItem: CartItemType;
+  incrementHandler: (cartItem: CartItemType) => void;
+  decrementHandler: (cartItem: CartItemType) => void;
+  removeHandler: (productId: string) => void;
 };
 
 const CartItemComponent = ({
-  cartItem
+  cartItem,
+  incrementHandler,
+  decrementHandler,
+  removeHandler,
 }: CartItemProps) => {
   const { photo, productId, name, price, quantity } = cartItem;
 
@@ -19,12 +26,12 @@ const CartItemComponent = ({
       </article>
 
       <div>
-        <button>-</button>
+        <button onClick={() => decrementHandler(cartItem)}>-</button>
         <p>{quantity}</p>
-        <button>+</button>
+        <button onClick={() => incrementHandler(cartItem)}>+</button>
       </div>
 
-      <button>
+      <button onClick={() => removeHandler(productId)}>
         <FaTrash />
       </button>
     </div>

@@ -44,3 +44,20 @@ export type SearchProductType = {
     sort: string;
     page: number;
 };
+
+export type CartItemType = {
+    name: string;
+    price: number;
+    quantity: number;
+    productId: string;
+    photo: string;
+    stock: number;
+};
+
+export type ShippingInfo = {
+    address: string;
+    city: string;
+    pinCode: string;
+    country: string;
+    state: string;
+};
