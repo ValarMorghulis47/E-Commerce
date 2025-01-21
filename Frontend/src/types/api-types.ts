@@ -40,3 +40,9 @@ export interface cateogoriesResponse {
 export interface SearchProductResponse extends ProductResponse {
     totalPages: number;
 };
+
+export interface ApplyCouponResponse {
+    success: boolean;
+    message: string;
+    discount: number;
+};

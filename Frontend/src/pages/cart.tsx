@@ -4,31 +4,55 @@ import { Link } from "react-router-dom";
 import CartItemComponent from "../components/cart-item";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { addToCart, calculatePrice, removeFromCart } from "../redux/reducers/cartReducer";
+import { addToCart, applyDiscount, calculatePrice, removeFromCart } from "../redux/reducers/cartReducer";
 import { CartItemType } from "../types/types";
+import { useApplyCouponMutation } from "../redux/api/couponAPI";
 
 const Cart = () => {
 
+  const [applyCoupon] = useApplyCouponMutation();
   const dispatch = useDispatch();
-  const { cartItems, loading, total, subtotal, shippingCharges, tax, discount } = useSelector((state: RootState) => state.cartReducer);
+  const { cartItems, total, subtotal, shippingCharges, tax, discount } = useSelector((state: RootState) => state.cartReducer);
 
   const [couponCode, setCouponCode] = useState<string>("");
   const [isValidCouponCode, setIsValidCouponCode] = useState<boolean>(false);
 
   const incrementHandler = (cartItem: CartItemType) => {
     if (cartItem.quantity >= cartItem.stock) return;
-    dispatch(addToCart({...cartItem, quantity: cartItem.quantity + 1}));
+    dispatch(addToCart({ ...cartItem, quantity: cartItem.quantity + 1 }));
   };
 
   const decrementHandler = (cartItem: CartItemType) => {
     if (cartItem.quantity <= 1) return;
-    dispatch(addToCart({...cartItem, quantity: cartItem.quantity - 1}));
+    dispatch(addToCart({ ...cartItem, quantity: cartItem.quantity - 1 }));
   };
 
   const removeHandler = (productId: string) => {
     dispatch(removeFromCart(productId));
   };
 
+  useEffect(() => {
+    const applyCouponFunction = async () => {
+      if (!couponCode) return;
+      const { data } = await applyCoupon({ code: couponCode });
+      if (data) {
+        setIsValidCouponCode(true);
+        dispatch(applyDiscount(data.discount));
+        dispatch(calculatePrice());
+      }
+    };
+
+    const timeOutId = setTimeout(() => {
+      applyCouponFunction();
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeOutId);
+      setIsValidCouponCode(false);
+      dispatch(applyDiscount(0));
+      dispatch(calculatePrice());
+    };
+  }, [couponCode]);
 
   useEffect(() => {
     dispatch(calculatePrice());
@@ -39,12 +63,12 @@ const Cart = () => {
       <main>
         {
           cartItems.length > 0 ? (
-          cartItems.map((cartItem) => (
-            <CartItemComponent key={cartItem.productId} cartItem={cartItem} incrementHandler={incrementHandler} decrementHandler={decrementHandler} removeHandler={removeHandler} />
-          ))
-        ): (
-          <h1>No Items Added</h1>
-        )}
+            cartItems.map((cartItem) => (
+              <CartItemComponent key={cartItem.productId} cartItem={cartItem} incrementHandler={incrementHandler} decrementHandler={decrementHandler} removeHandler={removeHandler} />
+            ))
+          ) : (
+            <h1>No Items Added</h1>
+          )}
       </main>
       <aside>
         <p>Subtotal: ${subtotal}</p>

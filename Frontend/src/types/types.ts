@@ -61,3 +61,7 @@ export type ShippingInfo = {
     country: string;
     state: string;
 };
+
+export type CouponApplyBodyType = {
+    code: string;
+};
