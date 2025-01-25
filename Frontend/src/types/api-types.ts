@@ -1,4 +1,4 @@
-import { Product, User } from "./types";
+import { Order, Product, User } from "./types";
 
 export type CustomError = {
     status: number;
@@ -45,4 +45,16 @@ export interface ApplyCouponResponse {
     success: boolean;
     message: string;
     discount: number;
+};
+
+export interface OrderResponse {
+    success: boolean;
+    message: string;
+    order: Order;
+};
+
+export interface AllOrderResponse {
+    success: boolean;
+    message: string;
+    orders: Order[];
 };

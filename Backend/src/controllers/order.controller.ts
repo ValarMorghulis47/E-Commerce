@@ -33,7 +33,7 @@ const newOrder = TryCatch(async (req: Request<{}, {}, newOrderRequest>, res, nex
 
     // await reduceStock(orderItems);
 
-    const [newOrder, _] = await Promise.all([
+    const [order, _] = await Promise.all([
         Order.create({
             orderItems,
             shippingInfo,
@@ -51,7 +51,7 @@ const newOrder = TryCatch(async (req: Request<{}, {}, newOrderRequest>, res, nex
     return res.status(201).json({
         success: true,
         message: "Order placed successfully",
-        order: newOrder
+        order
     });
 });
 

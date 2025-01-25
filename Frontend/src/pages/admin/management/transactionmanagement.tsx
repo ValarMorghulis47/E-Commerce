@@ -1,141 +1,152 @@
-// import { FaTrash } from "react-icons/fa";
-// import { Link } from "react-router-dom";
-// import AdminSidebar from "../../../components/admin/AdminSidebar";
-// // import { OrderItem } from "../../../models/types";
-// import { server } from "../../../App";
-// import { useState } from "react";
+import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+import toast from "react-hot-toast";
+import { FaTrash } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { Skeleton } from "../../../components/admin/Loader";
+import { useDeleteOrderMutation, useGetSingleOrderQuery, useUpdateOrderMutation } from "../../../redux/api/OrderAPI";
+import { RootState } from "../../../redux/store";
+import { OrderResponse } from "../../../types/api-types";
+import { OrderItemType } from "../../../types/types";
 
-// const img =
-//   "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8&w=1000&q=804";
+const TransactionManagement = () => {
 
-// const orderItems: OrderItem[] = [
-//   {
-//     name: "Puma Shoes",
-//     photo: img,
-//     id: "asdsaasdas",
-//     quantity: 4,
-//     price: 2000,
-//   },
-// ];
+    const params = useParams();
+    const navigate = useNavigate();
 
-// const TransactionManagement = () => {
-//   const [order, setOrder] = useState({
-//     name: "Puma Shoes",
-//     address: "77 black street",
-//     city: "Neyword",
-//     state: "Nevada",
-//     country: "US",
-//     pinCode: 242433,
-//     status: "Processing",
-//     subtotal: 4000,
-//     discount: 1200,
-//     shippingCharges: 0,
-//     tax: 200,
-//     total: 4000 + 200 + 0 - 1200,
-//     orderItems,
-//   });
+    const { user } = useSelector((state: RootState) => state.userReducer);
+    const { data, isLoading, isError } = useGetSingleOrderQuery(params.id!);
+    const [updateOrder] = useUpdateOrderMutation();
+    const [deleteOrder] = useDeleteOrderMutation();
 
-//   const {
-//     name,
-//     address,
-//     city,
-//     country,
-//     state,
-//     pinCode,
-//     subtotal,
-//     shippingCharges,
-//     tax,
-//     discount,
-//     total,
-//     status,
-//   } = order;
+    const { shippingInfo, orderItems, subtotal, shippingCharges, tax, discount, total, status, user: User } = data?.order || {
+        shippingInfo: {
+            address: "Address",
+            city: "City",
+            state: "State",
+            country: "Country",
+            pinCode: "Pincode"
+        },
+        orderItems: [],
+        subtotal: 0,
+        shippingCharges: 0,
+        tax: 0,
+        discount: 0,
+        total: 0,
+        status: "Status",
+        user: { name: "User Name", _id: "id" },
+    };
 
-//   const updateHandler = (): void => {
-//     setOrder((prev) => ({
-//       ...prev,
-//       status: "Shipped",
-//     }));
-//   };
+    const updateHandler = async () => {
+        const res = await updateOrder({ userId: user?._id!, orderId: params.id! });
+        if (res.data?.success) {
+            toast.success(res.data.message);
+            if (navigate) navigate("/admin/transaction");
+        } else {
+            const error = res.error as FetchBaseQueryError;
+            const messageResponse = error.data as OrderResponse;
+            toast.error(messageResponse.message);
+        };
+    }
+    const deleteHandler = async() => {
+        const res = await deleteOrder({ userId: user?._id!, orderId: params.id! });
+        if (res.data?.success) {
+            toast.success(res.data.message);
+            if (navigate) navigate("/admin/transaction");
+        } else {
+            const error = res.error as FetchBaseQueryError;
+            const messageResponse = error.data as OrderResponse;
+            toast.error(messageResponse.message);
+        };
+    };
 
-//   return (
-//     <div className="admin-container">
-//       <AdminSidebar />
-//       <main className="product-management">
-//         <section
-//           style={{
-//             padding: "2rem",
-//           }}
-//         >
-//           <h2>Order Items</h2>
+    if (isError) return navigate("/NotFound");
 
-//           {orderItems.map((i) => (
-//             <ProductCard
-//               key={i._id}
-//               name={i.name}
-//               photo={`${server}/${i.photo}`}
-//               productId={i.productId}
-//               _id={i._id}
-//               quantity={i.quantity}
-//               price={i.price}
-//             />
-//           ))}
-//         </section>
+    return (
+        <div className="admin-container">
+            <AdminSidebar />
+            <main className="product-management">
+                {
+                    isLoading ? <Skeleton length={10} /> :
+                        <>
+                            <section
+                                style={{
+                                    padding: "2rem",
+                                }}
+                            >
+                                <h2>Order Items</h2>
 
-//         <article className="shipping-info-card">
-//           <button className="product-delete-btn" onClick={deleteHandler}>
-//             <FaTrash />
-//           </button>
-//           <h1>Order Info</h1>
-//           <h5>User Info</h5>
-//           <p>Name: {name}</p>
-//           <p>
-//             Address: {`${address}, ${city}, ${state}, ${country} ${pinCode}`}
-//           </p>
-//           <h5>Amount Info</h5>
-//           <p>Subtotal: {subtotal}</p>
-//           <p>Shipping Charges: {shippingCharges}</p>
-//           <p>Tax: {tax}</p>
-//           <p>Discount: {discount}</p>
-//           <p>Total: {total}</p>
+                                {orderItems.map((i) => (
+                                    <ProductCard
+                                        key={i._id}
+                                        name={i.name}
+                                        photo={i.photo}
+                                        productId={i.productId}
+                                        _id={i._id}
+                                        quantity={i.quantity}
+                                        price={i.price}
+                                    />
+                                ))}
+                            </section>
 
-//           <h5>Status Info</h5>
-//           <p>
-//             Status:{" "}
-//             <span
-//               className={
-//                 status === "Delivered"
-//                   ? "purple"
-//                   : status === "Shipped"
-//                   ? "green"
-//                   : "red"
-//               }
-//             >
-//               {status}
-//             </span>
-//           </p>
-//           <button className="shipping-btn" onClick={updateHandler}>
-//             Process Status
-//           </button>
-//         </article>
-//       </main>
-//     </div>
-//   );
-// };
+                            <article className="shipping-info-card">
+                                <button className="product-delete-btn" onClick={deleteHandler}>
+                                    <FaTrash />
+                                </button>
+                                <h1>Order Info</h1>
+                                <h5>User Info</h5>
+                                <p>Name: {User.name}</p>
+                                <p>
+                                    Address: {`${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.state}, ${shippingInfo.country} ${shippingInfo.pinCode}`}
+                                </p>
+                                <h5>Amount Info</h5>
+                                <p>Subtotal: {subtotal}</p>
+                                <p>Shipping Charges: {shippingCharges}</p>
+                                <p>Tax: {tax}</p>
+                                <p>Discount: {discount}</p>
+                                <p>Total: {total}</p>
 
-// const ProductCard = ({
-//   name,
-//   photo,
-//   price,
-//   quantity,
-//   productId,
-// }: OrderItem) => (
-//   <div className="transaction-product-card">
-//     <img src={photo} alt={name} />
-//     <Link to={`/product/${productId}`}>{name}</Link>
-//     <span>
-//       ₹{price} X {quantity} = ₹{price * quantity}
-//     </span>
-//   </div>
-// );
+                                <h5>Status Info</h5>
+                                <p>
+                                    Status:{" "}
+                                    <span
+                                        className={
+                                            status === "Delivered"
+                                                ? "purple"
+                                                : status === "Shipped"
+                                                    ? "green"
+                                                    : "red"
+                                        }
+                                    >
+                                        {status}
+                                    </span>
+                                </p>
+                                <button className="shipping-btn" onClick={updateHandler}>
+                                    Process Status
+                                </button>
+                            </article>
+                        </>
+                }
+            </main>
+        </div>
+    );
+};
 
-// export default TransactionManagement;
+const ProductCard = ({
+    name,
+    photo,
+    price,
+    quantity,
+    productId,
+}: OrderItemType) => (
+    <div className="transaction-product-card">
+        <img src={photo} alt={name} />
+        <Link to={`/product/${productId}`}>{name}</Link>
+        <span>
+            ${price} X {quantity} = ${price * quantity}
+        </span>
+    </div>
+);
+
+export default TransactionManagement;

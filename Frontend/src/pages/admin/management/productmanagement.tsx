@@ -103,7 +103,7 @@ const Productmanagement = () => {
     }
   }, [data]);
 
-  if (isError) return navigate("/admin/product");
+  if (isError) return navigate("/NotFound");
 
 
   return (

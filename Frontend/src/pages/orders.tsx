@@ -1,7 +1,12 @@
-import { ReactElement, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { Column } from "react-table";
+import { Skeleton } from "../components/admin/Loader";
 import TableHOC from "../components/admin/TableHOC";
+import { useGetMyOrdersQuery } from "../redux/api/OrderAPI";
+import { RootState } from "../redux/store";
 
 type DataType = {
   _id: string;
@@ -41,16 +46,13 @@ const column: Column<DataType>[] = [
 
 const Orders = () => {
 
-  const [rows] = useState<DataType[]>([{
-    _id: "sds",
-    amount: 56660,
-    discount: 550,
-    quantity: 3,
-    status: <>
-      <span>Processing</span>
-    </>,
-    action: <><Link to={`/order/asds`}>View </Link></>,
-  }]);
+  const { user } = useSelector((state: RootState) => state.userReducer);
+
+  const { data, isLoading, isError } = useGetMyOrdersQuery(user?._id!);
+
+  if (isError) toast.error("Failed to fetch Orders");
+
+  const [rows, setRows] = useState<DataType[]>([]);
 
   const Table = TableHOC<DataType>(
     column,
@@ -59,10 +61,38 @@ const Orders = () => {
     "Orders",
     rows.length > 6
   )();
+
+  useEffect(() => {
+    if (data) {
+      setRows(data.orders.map((order) => ({
+        _id: order._id,
+        amount: order.total,
+        discount: order.discount,
+        quantity: order.orderItems.length,
+        status: (
+          <span
+            className={
+              order.status === "Processing"
+                ? "red"
+                : order.status === "Shipped"
+                  ? "green"
+                  : "purple"
+            }
+          >
+            {order.status}
+          </span>
+        ),
+        action: <Link to={`/admin/transaction/${order._id}`}>Manage</Link>,
+      })))
+    }
+  }, [data])
   return (
     <div className="container">
       <h1>My Orders</h1>
-      {Table}
+      {isLoading ? <Skeleton length={20} /> :
+        rows.length === 0 ? <h1>No Orders</h1> :
+          Table
+      }
     </div>
   );
 };

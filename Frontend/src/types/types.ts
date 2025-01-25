@@ -15,13 +15,29 @@ export type Product = {
     stock: number;
     category: string;
     photos: Photos[];
-}
+};
+
+export type Order = {
+    shippingInfo: ShippingInfo;
+    user: {
+        name: string;
+        _id: string;
+    };
+    subtotal: number;
+    tax: number;
+    shippingCharges: number;
+    discount: number;
+    total: number;
+    status: string;
+    orderItems: OrderItemType[];
+    _id: string;
+};
 
 type Photos = {
     url: string;
     public_id: string;
     _id: string;
-}
+};
 
 export type newProductBodyType = {
     id: string;
@@ -54,6 +70,15 @@ export type CartItemType = {
     stock: number;
 };
 
+export type OrderItemType = {
+    _id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    productId: string;
+    photo: string;
+};
+
 export type ShippingInfo = {
     address: string;
     city: string;
@@ -64,4 +89,9 @@ export type ShippingInfo = {
 
 export type CouponApplyBodyType = {
     code: string;
+};
+
+export type OrderUpdateAndDeleteType = {
+    userId: string;
+    orderId: string;
 };
