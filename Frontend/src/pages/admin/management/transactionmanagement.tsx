@@ -42,7 +42,7 @@ const TransactionManagement = () => {
         const res = await updateOrder({ userId: user?._id!, orderId: params.id! });
         if (res.data?.success) {
             toast.success(res.data.message);
-            if (navigate) navigate("/admin/transaction");
+            navigate("/admin/transaction");
         } else {
             const error = res.error as FetchBaseQueryError;
             const messageResponse = error.data as OrderResponse;
@@ -53,7 +53,7 @@ const TransactionManagement = () => {
         const res = await deleteOrder({ userId: user?._id!, orderId: params.id! });
         if (res.data?.success) {
             toast.success(res.data.message);
-            if (navigate) navigate("/admin/transaction");
+            navigate("/admin/transaction");
         } else {
             const error = res.error as FetchBaseQueryError;
             const messageResponse = error.data as OrderResponse;

@@ -58,3 +58,9 @@ export interface AllOrderResponse {
     message: string;
     orders: Order[];
 };
+
+export interface AllUserResponse {
+    success: boolean;
+    message: string;
+    users: User[];
+};

@@ -1,11 +1,17 @@
-
-import { ChangeEvent, FormEvent, useState } from "react";
+import axios from "axios";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { BiArrowBack } from "react-icons/bi";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { saveShippingInfo } from "../redux/reducers/cartReducer";
+import { RootState } from "../redux/store";
 
 const Shipping = () => {
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { cartItems, total } = useSelector((state: RootState) => state.cartReducer);
 
   const [shippingInfo, setShippingInfo] = useState({
     address: "",
@@ -14,6 +20,7 @@ const Shipping = () => {
     country: "",
     pinCode: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const changeHandler = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -23,7 +30,35 @@ const Shipping = () => {
 
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    dispatch(saveShippingInfo(shippingInfo));
+    setLoading(true);
+    try {
+      const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/v1/payment/create`, {
+        amount: total
+      }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      if (data.success){
+        navigate('/payment',{
+          state: data.client_secret
+        });
+      } else {
+        toast.error("Something went wrong");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(()=> {
+    if(cartItems.length === 0) {
+      navigate("/cart");
+    }
+  },[cartItems]);
 
   return (
     <div className="shipping">
@@ -80,7 +115,7 @@ const Shipping = () => {
           onChange={changeHandler}
         />
 
-        <button type="submit">Pay Now</button>
+        <button type="submit" disabled={loading}>Pay Now</button>
       </form>
     </div>
   );

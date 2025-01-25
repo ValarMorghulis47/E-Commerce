@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import Stripe from 'stripe';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
 import { errorMiddleware } from './middlewares/error.middleware.js';
@@ -10,6 +11,8 @@ dotenv.config({ path: './.env' });
 
 connectDB();
 
+const stripeKey = process.env.STRIPE_SECRET_KEY || "";
+export const stripe = new Stripe(stripeKey);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

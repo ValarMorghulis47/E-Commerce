@@ -1,13 +1,13 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { AllOrderResponse, DeleteResponse, OrderResponse } from "../../types/api-types";
-import { Order, OrderUpdateAndDeleteType } from "../../types/types";
+import { newOrderRequest, OrderUpdateAndDeleteType } from "../../types/types";
 
 export const orderApi = createApi({
     reducerPath: "orderApi",
     baseQuery: fetchBaseQuery({ baseUrl: `${import.meta.env.VITE_BACKEND_URL}/api/v1/order/` }),
     tagTypes: ["Order"],
     endpoints: (builder) => ({
-        newOrder: builder.mutation<OrderResponse, Order>({
+        newOrder: builder.mutation<OrderResponse, newOrderRequest>({
             query: (body) => ({
                 url: 'new',
                 method: "POST",

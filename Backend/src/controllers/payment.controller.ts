@@ -3,13 +3,30 @@ import { TryCatch } from "../middlewares/error.middleware.js";
 import { newCouponRequest } from "../types/types.js";
 import ErrorHandler from "../utils/errorHandler.js";
 import { Coupon } from "../models/coupon.model.js";
+import { stripe } from "../server.js";
 
+const paymentIntent = TryCatch(async (req, res, next) => {
+    const { amount } = req.body;
+    if (!amount) {
+        return next(new ErrorHandler("Please enter amount", 400));
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+        amount: Number(amount) * 100,
+        currency: 'usd',
+    });
+
+    return res.status(201).json({
+        success: true,
+        client_secret: paymentIntent.client_secret,
+    });
+});
 
 const newCoupon = TryCatch(async (req: Request<{}, {}, newCouponRequest>, res, next) => {
 
     const { code, amount } = req.body;
     if (!code || !amount) {
-       return next(new ErrorHandler("Please enter Coupon Code and Amount", 400));
+        return next(new ErrorHandler("Please enter Coupon Code and Amount", 400));
     }
 
     const coupon = await Coupon.create({
@@ -29,7 +46,7 @@ const newCoupon = TryCatch(async (req: Request<{}, {}, newCouponRequest>, res, n
 });
 
 const applyCoupon = TryCatch(async (req, res, next) => {
-    
+
     const { code } = req.body;
     const coupon = await Coupon.findOne({ code });
     if (!coupon) {
@@ -64,7 +81,7 @@ const updateCoupon = TryCatch(async (req, res, next) => {
 
 const deleteCoupon = TryCatch(async (req, res, next) => {
 
-    const { id } = req.params;  
+    const { id } = req.params;
     const coupon = await Coupon.findByIdAndDelete(id);
     if (!coupon) {
         return next(new ErrorHandler("Coupon not found", 404));
@@ -106,6 +123,7 @@ const getAllCoupons = TryCatch(async (req, res, next) => {
 });
 
 export {
+    paymentIntent,
     newCoupon,
     applyCoupon,
     updateCoupon,

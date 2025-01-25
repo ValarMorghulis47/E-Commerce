@@ -8,11 +8,11 @@ import { reduceStock } from "../utils/features.js";
 
 const newOrder = TryCatch(async (req: Request<{}, {}, newOrderRequest>, res, next) => {
 
-    const { orderItems, shippingInfo, subtotal, tax, discount, shippingCharges, total, user, status } = req.body;
+    const { orderItems, shippingInfo, subtotal, tax, discount, shippingCharges, total, user } = req.body;
     if (!orderItems || orderItems.length === 0) {
         return next(new ErrorHandler("Please add some items to your cart", 400));
     }
-    if (!shippingInfo || !subtotal || !tax || !discount || !shippingCharges || !total || !user || !status) {
+    if (!shippingInfo || !subtotal || !tax  || !shippingCharges || !total || !user) {
         return next(new ErrorHandler("Please fill all the fields", 400));
     }
 
@@ -43,7 +43,6 @@ const newOrder = TryCatch(async (req: Request<{}, {}, newOrderRequest>, res, nex
             shippingCharges,
             total,
             user,
-            status
         }),
         reduceStock(orderItems)
     ])

@@ -95,3 +95,17 @@ export type OrderUpdateAndDeleteType = {
     userId: string;
     orderId: string;
 };
+
+export type newOrderRequest = {
+    shippingInfo: ShippingInfo;
+    user: {
+        name: string;
+        _id: string;
+    };
+    subtotal: number;
+    tax: number;
+    shippingCharges: number;
+    discount: number;
+    total: number;
+    orderItems: CartItemType[];
+};
