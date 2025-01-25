@@ -96,20 +96,20 @@ export const getInventoryData = async (productCategories: string[], productsCoun
 
     const individualProductCount = await Promise.all(individualProductCountPromise);
 
-    const inventoryData = productCategories.map((category, index) => ({
-        [category]: Math.round((individualProductCount[index] / productsCount) * 100),
-    }));
-    return inventoryData;
-    // OR If the above is too complex, you can use the below code
-    // const inventoryData: Record<string, number>[] = [];
-
-    // productCategories.forEach((category, i) => {
-    //     inventoryData.push({
-    //         [category]: Math.round((individualProductCount[i] / productsCount) * 100),
-    //     });
-    // });
-
+    // const inventoryData = productCategories.map((category, index) => ({
+    //     [category]: Math.round((individualProductCount[index] / productsCount) * 100),
+    // }));
     // return inventoryData;
+    // OR If the above is too complex, you can use the below code
+    const inventoryData: Record<string, number>[] = [];
+
+    productCategories.forEach((category, i) => {
+        inventoryData.push({
+            [category]: Math.round((individualProductCount[i] / productsCount) * 100),
+        });
+    });
+
+    return inventoryData;
 };
 
 export const getCharData = ({length, docArray, today, property}: FuncProps) => {
@@ -120,9 +120,9 @@ export const getCharData = ({length, docArray, today, property}: FuncProps) => {
         const differenceFromCurrentMonth = (today.getMonth() - creationDate.getMonth() + 12) % 12; // this will give me the difference between the current month and the month of the order creation. +12 is to avoid negative values and %12 is to get the remainder(Just to nullify the effect of +12)
         if (differenceFromCurrentMonth < length) { 
             if (property) {
-                data[length - differenceFromCurrentMonth] += singleDoc[property]!;
+                data[length - differenceFromCurrentMonth - 1] += singleDoc[property]!;
             } else {
-                data[length - differenceFromCurrentMonth] += 1;
+                data[length - differenceFromCurrentMonth - 1] += 1;
             }
         };
     });

@@ -1,4 +1,4 @@
-import { Order, Product, User } from "./types";
+import { barChartsStats, DashboardStats, lineChartStats, Order, pieChartStats, Product, User } from "./types";
 
 export type CustomError = {
     status: number;
@@ -63,4 +63,28 @@ export interface AllUserResponse {
     success: boolean;
     message: string;
     users: User[];
+};
+
+export interface DashboarResponse {
+    success: boolean;
+    message: string;
+    stats: DashboardStats;
+};
+
+export interface BarChartResponse {
+    success: boolean;
+    message: string;
+    barCharts: barChartsStats;
+};
+
+export interface PieChartResponse {
+    success: boolean;
+    message: string;
+    pieCharts: pieChartStats;
+};
+
+export interface LineChartResponse {
+    success: boolean;
+    message: string;
+    lineCharts: lineChartStats;
 };

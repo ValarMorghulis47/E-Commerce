@@ -109,3 +109,76 @@ export type newOrderRequest = {
     total: number;
     orderItems: CartItemType[];
 };
+
+export type DashboardStats = {
+    changePercent: {
+        revenue: number;
+        users: number;
+        transactions: number;
+        products: number;
+    },
+    totalCount: {
+        totalRevenue: number;
+        totalUsers: number;
+        totalOrders: number;
+        totalProducts: number;
+    },
+    chartData: {
+        order: number[];
+        revenue: number[];
+    },
+    inventoryData: Record<string, number>[],
+    userRatio: {
+        male: number;
+        female: number;
+    },
+    recentOrders: {
+        _id: string;
+        discount: number;
+        total: number;
+        status: string;
+        quantity: number;
+    }[]
+};
+
+export type barChartsStats = {
+    userChartData: number[],
+    productChartData: number[],
+    ordersChartData: number[],
+};
+
+export type pieChartStats = {
+    orderStatusData: {
+        processing: number;
+        shipped: number;
+        delivered: number;
+    },
+    inventoryData: Record<string, number>[],
+    stockRatio: {
+        inStock: number;
+        outOfStock: number;
+    },
+    revenueDistribution: {
+        netMargin: number;
+        marketingCost: number;
+        totalDiscount: number;
+        burnt: number;
+        productionCost: number;
+    },
+    userAgeRatio: {
+        teenage: number;
+        adult: number;
+        old: number;
+    },
+    userRoleRatio: {
+        admin: number;
+        user: number;
+    }
+};
+
+export type lineChartStats = {
+    usersChartData : number[],
+    productsChartData : number[],
+    revenueData : number[],
+    discountData : number[],
+};
