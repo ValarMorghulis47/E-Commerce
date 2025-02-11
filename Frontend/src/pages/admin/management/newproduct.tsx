@@ -1,20 +1,21 @@
-import { ChangeEvent, useState } from "react";
-import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { useFileHandler } from "6pp";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { RootState } from "../../../redux/store";
 import { useSelector } from "react-redux";
-import { useNewProductMutation } from "../../../redux/api/productAPI";
-import { responseToast } from "../../../utils/features";
 import { useNavigate } from "react-router-dom";
+import AdminSidebar from "../../../components/admin/AdminSidebar";
+import { useNewProductMutation } from "../../../redux/api/productAPI";
+import { RootState } from "../../../redux/store";
+import { responseToast } from "../../../utils/features";
 
 const NewProduct = () => {
   const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [price, setPrice] = useState<number>();
   const [stock, setStock] = useState<number>();
-  const [photoPrev, setPhotoPrev] = useState<string>("");
-  const [photo, setPhoto] = useState<File>();
-
+  const photos = useFileHandler("multiple", 10, 5);
+  
   const [loading, setLoading] = useState<boolean>(false);
 
   const navigate = useNavigate();
@@ -22,32 +23,19 @@ const NewProduct = () => {
 
   const { user } = useSelector((state: RootState) => state.userReducer);
 
-  const changeImageHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    const file: File | undefined = e.target.files?.[0];
-
-    const reader: FileReader = new FileReader();
-
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onloadend = () => {
-        if (typeof reader.result === "string") {
-          setPhotoPrev(reader.result);
-          setPhoto(file);
-        }
-      };
-    }
-  };
-
   const submitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
       const formData = new FormData();
       formData.append("name", name);
+      formData.append("description", description);
       formData.append("price", String(price));
       formData.append("stock", String(stock));
       formData.append("category", category);
-      formData.append("photos", photo!);
+      photos.file.forEach((file) => {
+        formData.append("photos", file);
+      });
 
       const res = await newProduct({ formData, id: user?._id! });
       responseToast(res, navigate, "/admin/product");
@@ -72,6 +60,15 @@ const NewProduct = () => {
                 placeholder="Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div>
+              <label>Description</label>
+              <input
+                type="text"
+                placeholder="Product Description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
             <div>
@@ -105,10 +102,15 @@ const NewProduct = () => {
 
             <div>
               <label>Photo</label>
-              <input type="file" onChange={changeImageHandler} />
+              <input type="file" multiple accept="image/*" onChange={photos.changeHandler} />
             </div>
 
-            {photoPrev && <img src={photoPrev} alt="New Image" />}
+            {photos.error && <p>{photos.error}</p>}
+
+            {photos.preview &&
+              photos.preview.map((img, i) => (
+                <img key={i} src={img} alt="New Image" />
+              ))}
             <button type="submit" disabled={loading}>Create</button>
           </form>
         </article>

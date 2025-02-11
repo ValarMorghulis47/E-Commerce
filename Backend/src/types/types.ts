@@ -17,6 +17,7 @@ export interface newUserRequest {
 
 export interface newProductRequest {
     name: string;
+    description: string;
     price: number;
     category: string;
     stock: number;

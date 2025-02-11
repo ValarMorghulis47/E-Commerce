@@ -17,8 +17,9 @@ const Productmanagement = () => {
   const navigate = useNavigate();
   const { data, isLoading, isError } = useSingleProductQuery(params.id!);
 
-  const { name, price, stock, category, photos, _id } = data?.product || {
+  const { name, price, stock, category, photos, _id, description } = data?.product || {
     name: "Product Name",
+    description: "Product Description",
     price: 0,
     stock: 0,
     category: "Category",
@@ -28,6 +29,7 @@ const Productmanagement = () => {
   const [priceUpdate, setPriceUpdate] = useState<number>(price);
   const [stockUpdate, setStockUpdate] = useState<number>(stock);
   const [nameUpdate, setNameUpdate] = useState<string>(name);
+  const [descriptionUpdate, setDescriptionUpdate] = useState<string>(description);
   const [categoryUpdate, setCategoryUpdate] = useState<string>(category);
   const [photo, setPhoto] = useState<string>(photos[0].url);
   const [photoUpdate, setPhotoUpdate] = useState<string>("");
@@ -65,6 +67,8 @@ const Productmanagement = () => {
 
       if (nameUpdate) formData.append("name", nameUpdate);
 
+      if (descriptionUpdate) formData.append("description", descriptionUpdate);
+
       if (priceUpdate) formData.append("price", String(priceUpdate));
 
       if (stockUpdate !== undefined) formData.append("stock", String(stockUpdate));
@@ -96,6 +100,7 @@ const Productmanagement = () => {
   useEffect(() => {
     if (data) {
       setNameUpdate(data.product.name);
+      setDescriptionUpdate(data.product.description);
       setPriceUpdate(data.product.price);
       setStockUpdate(data.product.stock);
       setCategoryUpdate(data.product.category);
@@ -114,7 +119,7 @@ const Productmanagement = () => {
           isLoading ? <Skeleton length={10} /> : (
             <>
               <section>
-                <strong>ID - ${_id}</strong>
+                <strong>ID - {_id}</strong>
                 <img src={photo} alt="Product" />
                 <p>{name}</p>
                 {stock > 0 ? (
@@ -137,6 +142,14 @@ const Productmanagement = () => {
                       placeholder="Name"
                       value={nameUpdate}
                       onChange={(e) => setNameUpdate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label>Description</label>
+                    <textarea
+                      placeholder="Product Description"
+                      value={descriptionUpdate}
+                      onChange={(e) => setDescriptionUpdate(e.target.value)}
                     />
                   </div>
                   <div>

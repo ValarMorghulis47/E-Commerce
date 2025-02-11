@@ -9,8 +9,8 @@ import { Product } from "../models/product.model.js";
 
 const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res, next) => {
 
-    const { name, price, category, stock } = req.body;
-    if (!name || !price || !category || !stock) {
+    const { name, price, category, stock, description } = req.body;
+    if (!name || !price || !category || !stock || !description) {
         return next(new ErrorHandler("Please fill all the fields", 400));
     }
 
@@ -28,6 +28,7 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res,
 
     const product = await Product.create({
         name,
+        description,
         price,
         category: category.toLowerCase(),
         stock,
@@ -114,7 +115,7 @@ const deleteProduct = TryCatch(async (req, res, next) => {
     await product.deleteOne();
 
     return res.status(200).json({
-        status: true,
+        success: true,
         message: "Product Deleted Successfully"
     });
 

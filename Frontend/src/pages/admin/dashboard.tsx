@@ -12,9 +12,6 @@ import { useGetDashboardQuery } from "../../redux/api/dashboardAPI";
 import { RootState } from "../../redux/store";
 import { getLastMonths } from "../../utils/features";
 
-const userImg =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJxA5cTf-5dh5Eusm0puHbvAhOrCRPtckzjA&usqp";
-
 const { last6Months: months } = getLastMonths();
 
 const Dashboard = () => {
@@ -38,7 +35,7 @@ const Dashboard = () => {
               <BsSearch />
               <input type="text" placeholder="Search for data, users, docs" />
               <FaRegBell />
-              <img src={user?.photo || userImg} alt="User" />
+              <img src={user?.photo || ""} alt="User" />
             </div>
 
             <section className="widget-container">
@@ -146,7 +143,7 @@ const WidgetItem = ({
   <article className="widget">
     <div className="widget-info">
       <p>{heading}</p>
-      <h4>{amount ? `₹${value}` : value}</h4>
+      <h4>{amount ? `$${value}` : value}</h4>
       {percent > 0 ? (
         <span className="green">
           <HiTrendingUp /> +{`${percent > 10000 ? 9999 : percent}%`}

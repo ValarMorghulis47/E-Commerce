@@ -66,6 +66,8 @@ const Customers = () => {
 
   const deleteHandler = async(id: string) => {
     try {
+      console.log(id);
+      
       const res = await deleteUser(id);
       if (res.data?.success){
         toast.success("User deleted successfully");

@@ -5,6 +5,10 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: [true, "Please enter Name"],
     },
+    description: {
+        type: String,
+        required: [true, "Please enter Description"],
+    },
     price: {
         type: Number,
         required: [true, "Please enter Price"],
@@ -28,7 +32,11 @@ const productSchema = new mongoose.Schema({
     category: {
         type: String,
         required: [true, "Please enter Category"],
-    }
+    },
+    ratings: {
+        type: Number,
+        default: 0,
+    },
 }, {
     timestamps: true,
 });
