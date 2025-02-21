@@ -93,6 +93,28 @@ export type CouponApplyBodyType = {
     code: string;
 };
 
+export type updateCouponBodyType = {
+    id: string;
+    couponId: string;
+    body: {
+        code:string;
+        amount: number;
+    }
+}
+
+export type newCouponBodyType = {
+    id: string;
+    body: {
+        code:string;
+        amount: number;
+    }
+}
+
+export type singleCouponRequestType = {
+    id: string;
+    couponId: string;
+}
+
 export type OrderUpdateAndDeleteType = {
     userId: string;
     orderId: string;
@@ -183,4 +205,10 @@ export type lineChartStats = {
     productsChartData : number[],
     revenueData : number[],
     discountData : number[],
+};
+
+export type Coupon = {
+    _id: string;
+    code: string;
+    amount: number;
 };

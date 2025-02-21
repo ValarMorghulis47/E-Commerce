@@ -1,4 +1,4 @@
-import { barChartsStats, DashboardStats, lineChartStats, Order, pieChartStats, Product, User } from "./types";
+import { barChartsStats, Coupon, DashboardStats, lineChartStats, Order, pieChartStats, Product, User } from "./types";
 
 export type CustomError = {
     status: number;
@@ -88,3 +88,14 @@ export interface LineChartResponse {
     message: string;
     lineCharts: lineChartStats;
 };
+
+export interface AllCouponResponse {
+    success: boolean,
+    coupons: Coupon[]
+}
+
+export interface CouponResponse {
+    success: boolean,
+    message: string;
+    coupon: Coupon
+}

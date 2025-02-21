@@ -11,8 +11,8 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import { DeleteResponse } from "../../../types/api-types";
 import { Skeleton } from "../../../components/admin/Loader";
 
-const Productmanagement = () => {
 
+const productmanagement = () => {
   const params = useParams();
   const navigate = useNavigate();
   const { data, isLoading, isError } = useSingleProductQuery(params.id!);
@@ -196,6 +196,6 @@ const Productmanagement = () => {
       </main>
     </div>
   );
-};
+}
 
-export default Productmanagement;
+export default productmanagement;
