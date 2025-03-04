@@ -34,12 +34,14 @@ const port = process.env.PORT || 3000;
 // importing routes
 import userRoutes from './routes/user.routes.js';
 import productRoutes from './routes/product.routes.js';
+import reviewRoutes from './routes/review.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import statsRoutes from './routes/stats.routes.js';
 
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/product', productRoutes);
+app.use('/api/v1/review', reviewRoutes);
 app.use('/api/v1/order', orderRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/stats', statsRoutes);

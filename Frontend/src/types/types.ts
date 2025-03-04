@@ -35,6 +35,18 @@ export type Order = {
     _id: string;
 };
 
+export type Review = {
+    rating: number;
+    comment: string;
+    user: {
+        _id: string;
+        name: string;
+        photo: string;
+    };
+    product: string;
+    _id: string;
+}
+
 type Photos = {
     url: string;
     public_id: string;
@@ -108,6 +120,13 @@ export type newCouponBodyType = {
         code:string;
         amount: number;
     }
+}
+
+export type newReviewRequestType = {
+    productId: string;
+    userId: string;
+    rating: number;
+    comment: string;
 }
 
 export type singleCouponRequestType = {
