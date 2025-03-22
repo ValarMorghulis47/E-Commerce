@@ -1,6 +1,6 @@
 import express from 'express';
 import { adminOnly } from '../middlewares/auth.middleware.js';
-import { deleteProduct, getAllProductsAdmin, getCategories, getLatestProducts, getSearchProducts, getSingleProduct, newProduct, updateProduct } from '../controllers/product.controller.js';
+import { deleteProduct, deleteReview, getAllProductsAdmin, getAllReviews, getCategories, getLatestProducts, getSearchProducts, getSingleProduct, newProduct, newReview, updateProduct } from '../controllers/product.controller.js';
 import { multipleUpload } from '../middlewares/multer.middleware.js';
 
 const app = express.Router();
@@ -19,5 +19,8 @@ app.route('/:id').get(getSingleProduct)
     .put(adminOnly, multipleUpload, updateProduct)
     .delete(adminOnly, deleteProduct);
 
+app.post('/new/review/:id', newReview);
+app.delete('/delete/:id', deleteReview);
+app.get('/all/review/:id', getAllReviews);
 
 export default app;

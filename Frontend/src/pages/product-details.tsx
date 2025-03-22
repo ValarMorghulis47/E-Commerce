@@ -12,11 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useParams } from "react-router-dom";
 import { Skeleton } from "../components/admin/Loader";
 import RatingsComponent from "../components/ratings";
-import { useSingleProductQuery } from "../redux/api/productAPI";
+import { useDeleteReviewMutation, useGetAllReviewsQuery, useNewReviewMutation, useSingleProductQuery } from "../redux/api/productAPI";
 import { addToCart } from "../redux/reducers/cartReducer";
 import { CartItemType, Review } from "../types/types";
 import { RootState } from "../redux/store";
-import { useDeleteReviewMutation, useGetAllReviewsQuery, useNewReviewMutation } from "../redux/api/reviewAPI";
 import { FiEdit } from "react-icons/fi";
 
 const ProductDetails = () => {
@@ -82,16 +81,16 @@ const ProductDetails = () => {
     const submitReview = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         reviewCloseHandler();
+        setReviewSubmitLoading(true);
 
         try {
             const res = await createReview({
                 comment: reviewComment,
                 rating,
                 userId: user?._id!,
-                productId: params.id!,
+                id: params.id!,
             });
-            setReviewSubmitLoading(false);
-
+            
             if (res.data?.success) {
                 toast.success(res.data.message);
             } else {
@@ -100,13 +99,13 @@ const ProductDetails = () => {
         } catch (error) {
             toast.error("Something went wrong while creating review");
         } finally {
-            setReviewSubmitLoading(true);
+            setReviewSubmitLoading(false);
         }
     };
 
     const handleDeleteReview = async (reviewId: string) => {
         try {
-            const res = await deleteReview({ reviewId, userId: user?._id! });
+            const res = await deleteReview({ id: reviewId, userId: user?._id! });
             if (res.data?.success) {
                 toast.success(res.data.message);
             } else {
@@ -119,10 +118,14 @@ const ProductDetails = () => {
 
     useEffect(() => {
         if (data) setQuantity(data.product.stock > 0 ? 1 : 0);
-    }, []);
+    }, [data]);
 
     if (isError) return <Navigate to="/not-found" />;
-    if (reviewsError) toast.error("Failed to fetch reviews")
+    if (reviewsError) toast.error("Failed to fetch reviews");
+
+    const userReview = reviewResponse?.reviews.find(review => review.user._id === user?._id);
+    const otherReviews = reviewResponse?.reviews.filter(review => review.user._id !== user?._id);
+
     return (
         <div className="product-details">
             {isLoading ? (
@@ -226,14 +229,24 @@ const ProductDetails = () => {
                             <Skeleton width="45rem" length={5} />
                         </>
                     ) : (
-                        reviewResponse?.reviews.map((review) => (
-                            <ReviewCard
-                                handleDeleteReview={handleDeleteReview}
-                                userId={user?._id}
-                                key={review._id}
-                                review={review}
-                            />
-                        ))
+                        <>
+                            {userReview && (
+                                <ReviewCard
+                                    handleDeleteReview={handleDeleteReview}
+                                    userId={user?._id}
+                                    key={userReview._id}
+                                    review={userReview}
+                                />
+                            )}
+                            {otherReviews?.map((review) => (
+                                <ReviewCard
+                                    handleDeleteReview={handleDeleteReview}
+                                    userId={user?._id}
+                                    key={review._id}
+                                    review={review}
+                                />
+                            ))}
+                        </>
                     )}
                 </div>
             </section>

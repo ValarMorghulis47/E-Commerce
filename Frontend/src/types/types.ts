@@ -123,7 +123,7 @@ export type newCouponBodyType = {
 }
 
 export type newReviewRequestType = {
-    productId: string;
+    id: string;
     userId: string;
     rating: number;
     comment: string;
