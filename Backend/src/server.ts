@@ -4,14 +4,18 @@ import Stripe from 'stripe';
 import cors from 'cors';
 import { v2 as cloudinary } from 'cloudinary';
 import { errorMiddleware } from './middlewares/error.middleware.js';
-import { connectDB } from './utils/features.js';
+import { connectDB, connectRedis } from './utils/features.js';
 
 
 dotenv.config({ path: './.env' });
 
 connectDB();
+export const redis = connectRedis(process.env.REDIS_URI! || "");
 
+const port = process.env.PORT || 3000;
+export const redisTTL = process.env.REDIS_TTL || 60 * 60 * 24; // 1 day
 const stripeKey = process.env.STRIPE_SECRET_KEY || "";
+
 export const stripe = new Stripe(stripeKey);
 
 cloudinary.config({
@@ -29,7 +33,6 @@ app.use(cors({
 }));
 app.use(express.json());
 
-const port = process.env.PORT || 3000;
 
 // importing routes
 import userRoutes from './routes/user.routes.js';

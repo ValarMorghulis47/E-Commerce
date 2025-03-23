@@ -2,10 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { TryCatch } from "../middlewares/error.middleware.js";
 import { BaseQuerySearch, newProductRequest, SearchProduct } from "../types/types.js";
 import ErrorHandler from "../utils/errorHandler.js";
-import { DeleteFilesCloudinary, UploadFilesCloudinary } from "../utils/features.js";
+import { DeleteFilesCloudinary, invalidateCache, UploadFilesCloudinary } from "../utils/features.js";
 import { Product } from "../models/product.model.js";
 import { User } from "../models/user.model.js";
 import { Review } from "../models/review.model.js";
+import { redis, redisTTL } from "../server.js";
 
 
 
@@ -42,6 +43,8 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res,
         return next(new ErrorHandler("Failed to create product", 500));
     }
 
+    await invalidateCache({ product: true, admin: true });
+
     return res.status(201).json({
         success: true,
         message: "Product created successfully",
@@ -52,7 +55,18 @@ const newProduct = TryCatch(async (req: Request<{}, {}, newProductRequest>, res,
 
 const getAllProductsAdmin = TryCatch(async (req, res, next) => {
 
-    const products = await Product.find();
+    let products;
+    products = await redis.get("all-products");
+    if (products) {
+        products = JSON.parse(products);
+    }
+    else {
+        products = await Product.find();
+        if (!products) {
+            return next(new ErrorHandler("No products found", 404));
+        }
+        await redis.setex("all-products", redisTTL, JSON.stringify(products));
+    }
 
     return res.status(200).json({
         success: true,
@@ -64,11 +78,19 @@ const getAllProductsAdmin = TryCatch(async (req, res, next) => {
 const getSingleProduct = TryCatch(async (req, res, next) => {
 
     const { id } = req.params;
-    const product = await Product.findById(id);
-    if (!product) {
-        return next(new ErrorHandler("Product not found", 404));
-    }
+    let product;
+    product = await redis.get(`product-${id}`);
 
+    if (product) {
+        product = JSON.parse(product);
+    }
+    else {
+        product = await Product.findById(id);
+        if (!product) {
+            return next(new ErrorHandler("Product not found", 404));
+        }
+        await redis.setex(`product-${id}`, redisTTL, JSON.stringify(product));
+    }
     return res.status(200).json({
         success: true,
         message: "Product fetched Successfully",
@@ -96,6 +118,8 @@ const updateProduct = TryCatch(async (req, res, next) => {
     Object.assign(product, updateData);
     await product.save();
 
+    await invalidateCache({ product: true, admin: true, productId: String(product._id) });
+
     return res.status(200).json({
         success: true,
         message: "Product updated Successfully",
@@ -116,6 +140,8 @@ const deleteProduct = TryCatch(async (req, res, next) => {
 
     await product.deleteOne();
 
+    await invalidateCache({ product: true, admin: true, productId: String(product._id) });
+
     return res.status(200).json({
         success: true,
         message: "Product Deleted Successfully"
@@ -125,7 +151,18 @@ const deleteProduct = TryCatch(async (req, res, next) => {
 
 const getLatestProducts = TryCatch(async (req, res, next) => {
 
-    const products = await Product.find().sort({ createdAt: -1 }).limit(5);
+    let products;
+    products = await redis.get("latest-products");
+    if (products) {
+        products = JSON.parse(products);
+    }
+    else {
+        products = await Product.find().sort({ createdAt: -1 }).limit(5);
+        if (!products) {
+            return next(new ErrorHandler("No products found", 404));
+        }
+        await redis.setex("latest-products", redisTTL, JSON.stringify(products));
+    }
 
     return res.status(200).json({
         success: true,
@@ -137,7 +174,18 @@ const getLatestProducts = TryCatch(async (req, res, next) => {
 
 const getCategories = TryCatch(async (req, res, next) => {
 
-    const categories = await Product.distinct("category");
+    let categories;
+    categories = await redis.get("categories");
+    if (categories) {
+        categories = JSON.parse(categories);
+    }
+    else {
+        categories = await Product.distinct("category");
+        if (!categories) {
+            return next(new ErrorHandler("No categories found", 404));
+        }
+        await redis.setex("categories", redisTTL, JSON.stringify(categories));
+    }
 
     return res.status(200).json({
         success: true,
@@ -152,7 +200,7 @@ const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct
     const page = Number(req.query.page) || 1;
     const limit = Number(process.env.SEARCH_PRODUCT_LIMIT) || 10;
     const skipProducts = (page - 1) * limit;
-    
+
     const searchObj: BaseQuerySearch = {};
     if (search) {
         searchObj.name = {
@@ -177,7 +225,7 @@ const getSearchProducts = TryCatch(async (req: Request<{}, {}, {}, SearchProduct
     ]);
 
     const products = filteredProducts;
-    
+
     return res.status(200).json({
         success: true,
         message: "Products fetched Successfully",
@@ -233,16 +281,27 @@ const newReview = TryCatch(async (req, res, next) => {
     product.ratings = Math.floor(totalRating / reviews.length) || 0;
     await product.save();
 
-    return res.status(alreadyReviewed? 200: 201).json({
+    await invalidateCache({ product: true, admin: true, productId: String(product._id), review: true });
+
+    return res.status(alreadyReviewed ? 200 : 201).json({
         success: true,
-        message: `Review ${alreadyReviewed? "updated": "created"} Successfully`,
+        message: `Review ${alreadyReviewed ? "updated" : "created"} Successfully`,
     });
 });
 
 const getAllReviews = TryCatch(async (req, res, next) => {
-    const reviews = await Review.find({product: req.params.id}).populate("user", "name photo").sort({createdAt: -1});
-    if (!reviews) {
-        return next(new ErrorHandler("No reviews found", 404));
+
+    let reviews;
+    reviews = await redis.get(`reviews-${req.params.id}`);
+    if (reviews) {
+        reviews = JSON.parse(reviews);
+    }
+    else {
+        reviews = await Review.find({ product: req.params.id }).populate("user", "name photo").sort({ createdAt: -1 });
+        if (!reviews) {
+            return next(new ErrorHandler("No reviews found", 404));
+        }
+        await redis.setex(`reviews-${req.params.id}`, redisTTL, JSON.stringify(reviews));
     }
 
     return res.status(200).json({
@@ -283,6 +342,8 @@ const deleteReview = TryCatch(async (req, res, next) => {
     product.numReviews = reviews.length;    // or we can just decrement by 1
     product.ratings = Math.floor(totalRating / reviews.length) || 0;
     await product.save();
+
+    await invalidateCache({ product: true, admin: true, productId: String(product._id), review: true });
 
     return res.status(200).json({
         success: true,

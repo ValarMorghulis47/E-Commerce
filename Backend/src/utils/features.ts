@@ -1,8 +1,10 @@
 import mongoose, { Document } from "mongoose";
 import { v4 as uuid } from "uuid";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
-import { OrderItem } from "../types/types.js";
+import { InvalidateCacheProps, OrderItem } from "../types/types.js";
 import { Product } from "../models/product.model.js";
+import { Redis } from "ioredis";
+import { redis } from "../server.js";
 
 export const connectDB = async () => {
     try {
@@ -12,6 +14,61 @@ export const connectDB = async () => {
     catch (error) {
         console.log(`Database Connection Error: ${(error as Error).message}`);
         process.exit(1);
+    }
+};
+
+export const connectRedis = (redisURI: string) => {
+    const redis = new Redis(redisURI);
+
+    redis.on("connect", () => console.log("Redis connected"));
+    redis.on("error", (err) => console.log(`Redis connection error: ${err}`));
+
+    return redis;
+};
+
+export const invalidateCache = async ({
+    product,
+    order,
+    admin,
+    review,
+    userId,
+    orderId,
+    productId,
+}: InvalidateCacheProps) => {
+    if (review) {
+        await redis.del([`reviews-${productId}`]);
+    }
+
+    if (product) {
+        const productKeys: string[] = [
+            "latest-products",
+            "categories",
+            "all-products",
+        ];
+
+        if (typeof productId === "string") productKeys.push(`product-${productId}`);
+
+        if (typeof productId === "object")
+            productId.forEach((i) => productKeys.push(`product-${i}`));
+
+        await redis.del(productKeys);
+    }
+    if (order) {
+        const ordersKeys: string[] = [
+            "all-orders",
+            `my-orders-${userId}`,
+            `order-${orderId}`,
+        ];
+
+        await redis.del(ordersKeys);
+    }
+    if (admin) {
+        await redis.del([
+            "admin-stats",
+            "admin-pie-charts",
+            "admin-bar-charts",
+            "admin-line-charts",
+        ]);
     }
 };
 
@@ -112,13 +169,13 @@ export const getInventoryData = async (productCategories: string[], productsCoun
     return inventoryData;
 };
 
-export const getCharData = ({length, docArray, today, property}: FuncProps) => {
+export const getCharData = ({ length, docArray, today, property }: FuncProps) => {
     const data: number[] = new Array(length).fill(0);
 
     docArray.forEach(singleDoc => {
         const creationDate = singleDoc.createdAt;
         const differenceFromCurrentMonth = (today.getMonth() - creationDate.getMonth() + 12) % 12; // this will give me the difference between the current month and the month of the order creation. +12 is to avoid negative values and %12 is to get the remainder(Just to nullify the effect of +12)
-        if (differenceFromCurrentMonth < length) { 
+        if (differenceFromCurrentMonth < length) {
             if (property) {
                 data[length - differenceFromCurrentMonth - 1] += singleDoc[property]!;
             } else {
