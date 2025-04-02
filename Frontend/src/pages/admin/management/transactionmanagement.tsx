@@ -2,7 +2,7 @@ import { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
 import { useSelector } from "react-redux";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import AdminSidebar from "../../../components/admin/AdminSidebar";
 import { Skeleton } from "../../../components/admin/Loader";
 import { useDeleteOrderMutation, useGetSingleOrderQuery, useUpdateOrderMutation } from "../../../redux/api/OrderAPI";
@@ -49,7 +49,7 @@ const TransactionManagement = () => {
             toast.error(messageResponse.message);
         };
     }
-    const deleteHandler = async() => {
+    const deleteHandler = async () => {
         const res = await deleteOrder({ userId: user?._id!, orderId: params.id! });
         if (res.data?.success) {
             toast.success(res.data.message);
@@ -61,7 +61,7 @@ const TransactionManagement = () => {
         };
     };
 
-    if (isError) return navigate("/NotFound");
+     if (isError) return <Navigate to={"/404"} />;
 
     return (
         <div className="admin-container">
